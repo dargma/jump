@@ -10,7 +10,9 @@ export function drawPlayerComp(k) {
   return {
     draw() {
       const hurt = (this.hurtT || 0) > 0;
-      const ink = hurt ? k.rgb(220, 70, 70) : k.rgb(35, 35, 50); // 아프면 빨개짐
+      const dark = this.skyDark || 0;                  // 밤일수록 밝은 색으로(안 보이는 문제 해결)
+      const g = lerpN(35, 235, dark);
+      const ink = hurt ? k.rgb(220, 70, 70) : k.rgb(g, g, Math.min(255, g + 18));
       const vy = this.vy || 0;
       const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
       const pose = poseFor(n);
@@ -52,17 +54,18 @@ export function drawPlayerComp(k) {
 function drawHair(k, vy, ink) {
   const t = k.time();
   const flow = Math.max(-1.3, Math.min(1.3, vy / 550));
-  const roots = [-6, -3.5, -1, 1, 3.5, 6];
-  const seg = 4;
+  // 가닥 많고(11) 얇게. 마디를 잘게(6) 나눠 부드러운 곡선으로 휘날린다.
+  const roots = [-6.5, -5.2, -3.9, -2.6, -1.3, 0, 1.3, 2.6, 3.9, 5.2, 6.5];
+  const seg = 6;
   for (const rx of roots) {
     const dir = rx >= 0 ? 1 : -1;
     let prev = k.vec2(rx, -19);
     for (let j = 1; j <= seg; j++) {
-      const up = -19 - j * (4 + flow * 3);           // 위로 뻗음(하강일수록 더)
-      const wave = Math.sin(t * 7 + rx * 0.8 - j * 0.7) * (1.8 * j); // 휘날리는 파동
-      const out = dir * j * 1.2;                       // 끝으로 갈수록 바깥으로
+      const up = -19 - j * (2.9 + flow * 2.2);                       // 위로 뻗음(하강일수록 더)
+      const wave = Math.sin(t * 6 + rx * 0.6 - j * 0.55) * (1.0 * j); // 부드러운 파동
+      const out = dir * j * 0.75;                                     // 끝으로 갈수록 살짝 바깥
       const cur = k.vec2(rx + out + wave, up);
-      k.drawLine({ p1: prev, p2: cur, width: Math.max(1.2, 2.4 - j * 0.25), color: ink });
+      k.drawLine({ p1: prev, p2: cur, width: Math.max(0.7, 1.5 - j * 0.14), color: ink });
       prev = cur;
     }
   }

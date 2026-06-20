@@ -6,6 +6,9 @@ export const TUNING = {
   width: 400,
   height: 600,
 
+  // 전체 게임 속도(1=기본). 0.8~0.9면 더 차분하다. main.js에서 timeScale로 적용.
+  gameSpeed: 0.85,
+
   // 졸라맨 충돌 박스 크기(px)
   playerWidth: 30,
   playerHeight: 40,

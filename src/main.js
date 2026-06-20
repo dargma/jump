@@ -17,6 +17,9 @@ const k = kaplay({
 // 한글 폰트 로드(없으면 한글이 안 보임). 다른 폰트 URL로 교체 가능.
 k.loadFont("kr", "https://cdn.jsdelivr.net/fontsource/fonts/jua@latest/korean-400-normal.woff2");
 
+// 전체 게임 속도(0.8~0.9면 더 차분). dt 기반 움직임이 전부 함께 느려진다.
+if (k.debug) k.debug.timeScale = TUNING.gameSpeed;
+
 registerGameScene(k);
 registerGameOverScene(k);
 

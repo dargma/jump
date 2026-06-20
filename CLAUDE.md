@@ -29,7 +29,8 @@ doodle-prince/
 ├─ config/
 │  ├─ tuning.js      # ★ game feel 숫자 (중력/점프/이동/카메라/발판/난이도/코인)
 │  ├─ items.js       # ★ 아이템 정의 (데이터)
-│  └─ platforms.js   # ★ 발판 종류 정의 (일반/트램펄린/구름/움직이는)
+│  ├─ platforms.js   # ★ 발판 종류 정의 (일반/트램펄린/구름/움직이는)
+│  └─ stages.js      # ★ 3스테이지 정의 (테마/하늘색/보상/스토리)
 ├─ assets/           # 나중에 이미지/사운드
 ├─ GDD.md            # 게임 디자인 문서
 └─ CLAUDE.md         # 이 파일
@@ -40,6 +41,9 @@ doodle-prince/
 | 하고 싶은 것 | 고칠 파일 |
 |---|---|
 | 점프가 너무 낮다/높다, 너무 빠르다/느리다 | `config/tuning.js` |
+| 전체 게임 속도(차분하게/빠르게) | `config/tuning.js` (`gameSpeed`) |
+| 스테이지 개수/테마/높이/보상/스토리 | `config/stages.js` |
+| 시작·엔딩 이야기 | `config/stages.js` (`STORY`) |
 | 좌우 이동이 굼뜨다 | `config/tuning.js` |
 | 카메라가 너무 빨리/느리게 따라온다 | `config/tuning.js` |
 | 발판 간격을 넓히고/좁히기 | `config/tuning.js` |

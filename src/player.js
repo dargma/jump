@@ -15,6 +15,7 @@ export function makePlayer(k, x, y) {
       lastPlatY: y,     // 마지막으로 밟은 발판 y (추락 거리 계산용)
       hurtT: 0,         // 아야! 찌그러짐 애니메이션 남은 시간
       rocketOn: false,  // 로켓 효과 중이면 발밑에 불꽃
+      skyDark: 0,       // 0(낮)~1(밤). 밤엔 졸라맨을 밝게 그려 보이게 한다
       w: TUNING.playerWidth,
       h: TUNING.playerHeight,
     },
