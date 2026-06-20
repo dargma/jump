@@ -114,6 +114,7 @@ export function registerGameScene(k) {
       if (wasFalling && player.vy < 0) {
         if (player.lastPlatY - fromPlatY > TUNING.bigFallDist) bigFall();
         dustPuff(k, player.pos.x, player.pos.y + player.h / 2);
+        if (player.vy < -TUNING.jumpVel * 1.3 && k.shake) k.shake(3); // 트램펄린/날개 큰 점프 타격감
       }
 
       // 3) 항상 받침 보장 + 태권 발차기로 머리 위 발판 격파
@@ -141,6 +142,7 @@ export function registerGameScene(k) {
           player.landT = 0.16;
           coinBonus += 30;
           playItem();
+          if (k.shake) k.shake(4);
           burstStars(k, m.pos.x, m.pos.y);
           floatText(k, m.pos.x, m.pos.y, "+30", k.rgb(120, 205, 120));
           k.destroy(m);
@@ -387,6 +389,7 @@ function breakAbove(k, player) {
 // 발판 격파 애니메이션: 나무 파편이 튀고 굴러 떨어지며 사라진다.
 function shatterPlatform(k, p) {
   playBreak();
+  if (k.shake) k.shake(4);
   for (let i = 0; i < 6; i++) {
     const fr = k.add([
       k.rect(11, 8, { radius: 2 }), k.pos(p.pos.x + (i - 2.5) * 11, p.pos.y), k.anchor("center"),

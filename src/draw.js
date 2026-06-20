@@ -16,12 +16,18 @@ export function drawPlayerComp(k) {
       const vy = this.vy || 0;
       const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
 
-      // 몸 기울임(이동 방향) + 찌그러짐(아야!/착지). 태권소년은 발차기가 있어 기울임 생략.
+      // 몸 기울임(이동 방향) + 바운스 스쿼시/스트레치(통! 납작했다 쭉). 태권은 기울임 생략.
       const lean = this.style === "taekwon" ? 0 : (this.dir || 0) * 7;
-      const land = Math.max(0, this.landT || 0) / 0.16; // 1→0
+      const lt = this.landT || 0; // 0.16에서 시작해 줄어듦
       let sx = 1, sy = 1;
       if (hurt) { sx = 1.35; sy = 0.65; }
-      else if (land > 0) { sx = 1 + 0.28 * land; sy = 1 - 0.28 * land; } // 착지 순간 납작→복원
+      else if (lt > 0.1) {        // 착지 직후(~0.06s): 납작
+        const a = (lt - 0.1) / 0.06;
+        sx = 1 + 0.28 * a; sy = 1 - 0.28 * a;
+      } else if (lt > 0) {        // 곧바로(~0.10s): 위로 쭉
+        const a = lt / 0.1;
+        sx = 1 - 0.16 * a; sy = 1 + 0.22 * a;
+      }
 
       k.pushTransform();
       if (lean !== 0) k.pushRotate(lean);
