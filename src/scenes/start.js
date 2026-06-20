@@ -22,7 +22,10 @@ export function registerStartScene(k) {
         k.color(255, 255, 255), k.outline(3, k.rgb(215, 222, 235)), k.area(),
       ]);
       // 캐릭터 미리보기(머리색/반머리/콧수염 반영)
-      k.add([k.pos(x, y - 4), drawPlayerComp(k), { hairCol: c.hair, bald: !!c.bald, mustache: !!c.mustache, vy: 0, hurtT: 0, rocketOn: false, skyDark: 0, dir: 0, landT: 0 }]);
+      k.add([k.pos(x, y - 4), drawPlayerComp(k), {
+        hairCol: c.hair, bald: !!c.bald, mustache: !!c.mustache, style: c.style, belt: c.belt,
+        vy: 0, hurtT: 0, rocketOn: false, skyDark: 0, dir: 0, landT: 0, face: 1, kickType: 0,
+      }]);
       // 이름
       k.add([k.text(c.name, { size: 15, font: FONT }), k.pos(x, y + 44), k.anchor("center"), k.color(60, 60, 90)]);
       card.onClick(() => pick(k, i));

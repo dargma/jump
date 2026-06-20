@@ -239,8 +239,8 @@ function makeHearts(k) {
 
 // ── 연출 ──
 function burstStars(k, x, y) {
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2;
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
     const st = k.add([
       k.circle(3), k.pos(x, y), k.color(255, 210, 80), k.opacity(1), k.anchor("center"),
       { vx: Math.cos(a) * 130, vy: Math.sin(a) * 130 - 30, life: 0.6 },
@@ -303,7 +303,7 @@ function makeSky(k) {
   const c = STAGES[0].sky;
   const bg = k.add([k.rect(TUNING.width, TUNING.height), k.pos(0, 0), k.fixed(), k.z(-100), k.color(c[0], c[1], c[2])]);
   const stars = [];
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 14; i++) { // 저사양 고려해 별 개수 절제
     stars.push(k.add([
       k.circle(k.rand(1, 2)), k.pos(k.rand(0, TUNING.width), k.rand(0, TUNING.height * 0.8)),
       k.color(255, 255, 255), k.opacity(0), k.fixed(), k.z(-99), { ph: k.rand(0, 6) },

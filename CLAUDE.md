@@ -45,6 +45,8 @@ doodle-prince/
 |---|---|
 | 점프가 너무 낮다/높다, 너무 빠르다/느리다 | `config/tuning.js` |
 | 전체 게임 속도(차분하게/빠르게) | `config/tuning.js` (`gameSpeed`) |
+| 렌더 해상도(라즈베리파이=1, PC=2) | `config/tuning.js` (`pixelDensity`) |
+| 캐릭터(태권소년 발차기 등) | `config/characters.js` + `src/draw.js` (`drawTaekwon`) |
 | 스테이지 개수/테마/높이/보상/스토리 | `config/stages.js` |
 | 시작·엔딩 이야기 | `config/stages.js` (`STORY`) |
 | 좌우 이동이 굼뜨다 | `config/tuning.js` |

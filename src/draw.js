@@ -15,10 +15,9 @@ export function drawPlayerComp(k) {
       const ink = hurt ? k.rgb(220, 70, 70) : k.rgb(g, g, Math.min(255, g + 18));
       const vy = this.vy || 0;
       const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
-      const pose = poseFor(n);
 
-      // 몸 기울임(이동 방향) + 찌그러짐(아야!/착지)
-      const lean = (this.dir || 0) * 7;
+      // 몸 기울임(이동 방향) + 찌그러짐(아야!/착지). 태권소년은 발차기가 있어 기울임 생략.
+      const lean = this.style === "taekwon" ? 0 : (this.dir || 0) * 7;
       const land = Math.max(0, this.landT || 0) / 0.16; // 1→0
       let sx = 1, sy = 1;
       if (hurt) { sx = 1.35; sy = 0.65; }
@@ -35,33 +34,93 @@ export function drawPlayerComp(k) {
         k.drawPolygon({ pts: [k.vec2(-3, 18), k.vec2(3, 18), k.vec2(0, 18 + f * 0.6)], color: k.rgb(255, 230, 90) });
       }
 
-      // 머리 + 몸통
-      k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
-      k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
+      if (this.style === "taekwon") {
+        drawTaekwon(k, this, ink, n); // 도복 + 발차기
+      } else {
+        const pose = poseFor(n); // 일반 캐릭터 점프 자세
+        // 머리 + 몸통
+        k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
+        k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
 
-      // 콧수염(아저씨)
-      if (this.mustache) {
-        k.drawLine({ p1: k.vec2(-5, -10), p2: k.vec2(0, -9), width: 2.6, color: ink });
-        k.drawLine({ p1: k.vec2(0, -9), p2: k.vec2(5, -10), width: 2.6, color: ink });
-      }
+        // 콧수염(아저씨)
+        if (this.mustache) {
+          k.drawLine({ p1: k.vec2(-5, -10), p2: k.vec2(0, -9), width: 2.6, color: ink });
+          k.drawLine({ p1: k.vec2(0, -9), p2: k.vec2(5, -10), width: 2.6, color: ink });
+        }
 
-      // 머리카락: 캐릭터 머리색. bald면 옆머리만(반머리).
-      const hairCol = this.hairCol ? k.rgb(this.hairCol[0], this.hairCol[1], this.hairCol[2]) : ink;
-      drawHair(k, vy, hairCol, this.bald);
+        // 머리카락: 캐릭터 머리색. bald면 옆머리만(반머리).
+        const hairCol = this.hairCol ? k.rgb(this.hairCol[0], this.hairCol[1], this.hairCol[2]) : ink;
+        drawHair(k, vy, hairCol, this.bald);
 
-      // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
-      for (const s of [-1, 1]) {
-        // 팔: 어깨(0,-4) → 팔꿈치 → 손
-        k.drawLine({ p1: k.vec2(0, -4), p2: k.vec2(s * pose.elbow[0], pose.elbow[1]), width: 3, color: ink });
-        k.drawLine({ p1: k.vec2(s * pose.elbow[0], pose.elbow[1]), p2: k.vec2(s * pose.hand[0], pose.hand[1]), width: 3, color: ink });
-        // 다리: 엉덩이(0,8) → 무릎 → 발
-        k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(s * pose.knee[0], pose.knee[1]), width: 3, color: ink });
-        k.drawLine({ p1: k.vec2(s * pose.knee[0], pose.knee[1]), p2: k.vec2(s * pose.foot[0], pose.foot[1]), width: 3, color: ink });
+        // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
+        for (const s of [-1, 1]) {
+          k.drawLine({ p1: k.vec2(0, -4), p2: k.vec2(s * pose.elbow[0], pose.elbow[1]), width: 3, color: ink });
+          k.drawLine({ p1: k.vec2(s * pose.elbow[0], pose.elbow[1]), p2: k.vec2(s * pose.hand[0], pose.hand[1]), width: 3, color: ink });
+          k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(s * pose.knee[0], pose.knee[1]), width: 3, color: ink });
+          k.drawLine({ p1: k.vec2(s * pose.knee[0], pose.knee[1]), p2: k.vec2(s * pose.foot[0], pose.foot[1]), width: 3, color: ink });
+        }
       }
 
       k.popTransform();
     },
   };
+}
+
+// 태권소년: 도복 + 띠 + 머리띠. 점프 단계(n)에 따라 정점에서 발차기가 쭉 뻗는다.
+// kickType: 0 앞차기 / 1 옆차기 / 2 뒤돌려차기(공중 한 바퀴).
+function drawTaekwon(k, self, ink, n) {
+  const face = (self.face || 1) >= 0 ? 1 : -1;
+  const kick = self.kickType || 0;
+  const ext = Math.max(0, Math.min(1, 1 - Math.abs(n))); // 정점(n=0)에서 1
+  const belt = self.belt ? k.rgb(self.belt[0], self.belt[1], self.belt[2]) : k.rgb(220, 45, 45);
+  const gi = k.rgb(248, 248, 252);
+
+  // 몸 회전: 옆차기는 살짝 뒤로 젖힘, 뒤돌려차기는 점프 동안 한 바퀴(360°)
+  let rot = 0;
+  if (kick === 1) rot = -face * 14 * ext;
+  else if (kick === 2) rot = face * ((n + 1) / 2) * 360;
+  if (rot !== 0) k.pushRotate(rot);
+
+  // 도복 상의(흰색) + V넥 + 띠(매듭/꼬리)
+  k.drawPolygon({ pts: [k.vec2(-7, -6), k.vec2(7, -6), k.vec2(8, 9), k.vec2(-8, 9)], color: gi });
+  k.drawLine({ p1: k.vec2(-7, -6), p2: k.vec2(0, 7), width: 1.8, color: ink });
+  k.drawLine({ p1: k.vec2(7, -6), p2: k.vec2(0, 7), width: 1.8, color: ink });
+  k.drawRect({ width: 18, height: 4, pos: k.vec2(0, 8), anchor: "center", color: belt });
+  k.drawLine({ p1: k.vec2(-2, 9), p2: k.vec2(-3, 15), width: 2.4, color: belt });
+  k.drawLine({ p1: k.vec2(2, 9), p2: k.vec2(3, 15), width: 2.4, color: belt });
+
+  // 머리 + 머리띠(꼬리가 발차기 때 날림)
+  k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
+  k.drawLine({ p1: k.vec2(-7, -16), p2: k.vec2(7, -16), width: 2.4, color: belt });
+  k.drawLine({ p1: k.vec2(-face * 7, -16), p2: k.vec2(-face * 13, -14 - ext * 4), width: 2, color: belt });
+
+  // 팔(가드): 앞주먹 + 뒷팔 균형
+  k.drawLine({ p1: k.vec2(0, -3), p2: k.vec2(face * 5, -4), width: 3, color: ink });
+  k.drawLine({ p1: k.vec2(face * 5, -4), p2: k.vec2(face * 7, -9), width: 3, color: ink });
+  k.drawLine({ p1: k.vec2(0, -3), p2: k.vec2(-face * 7, -1), width: 3, color: ink });
+  k.drawLine({ p1: k.vec2(-face * 7, -1), p2: k.vec2(-face * 11, 3 + ext * 3), width: 3, color: ink });
+
+  // 지지 다리(뒤, 굽힘)
+  k.drawLine({ p1: k.vec2(0, 9), p2: k.vec2(-face * 4, 15), width: 4, color: ink });
+  k.drawLine({ p1: k.vec2(-face * 4, 15), p2: k.vec2(-face * 6, 21), width: 4, color: ink });
+
+  // 차는 다리: chamber(접기) → extend(뻗기). 정점에서 시원하게 뻗는다.
+  const cK = [face * 5, 3], cF = [face * 3, 9];
+  let eK, eF;
+  if (kick === 0) { eK = [face * 11, 5]; eF = [face * 24, 3]; }       // 앞차기
+  else if (kick === 1) { eK = [face * 11, 7]; eF = [face * 27, 9]; }  // 옆차기(발날)
+  else { eK = [-face * 9, 5]; eF = [-face * 23, 2]; }                 // 뒤돌려차기(뒤로)
+  const kn = [lerpN(cK[0], eK[0], ext), lerpN(cK[1], eK[1], ext)];
+  const ft = [lerpN(cF[0], eF[0], ext), lerpN(cF[1], eF[1], ext)];
+  k.drawLine({ p1: k.vec2(0, 9), p2: k.vec2(kn[0], kn[1]), width: 4, color: ink });
+  k.drawLine({ p1: k.vec2(kn[0], kn[1]), p2: k.vec2(ft[0], ft[1]), width: 4, color: ink });
+  if (kick === 1) k.drawLine({ p1: k.vec2(ft[0], ft[1] - 3), p2: k.vec2(ft[0], ft[1] + 3), width: 3, color: ink }); // 발날
+
+  // 차는 순간 '팟!' 임팩트 선
+  if (ext > 0.75) {
+    k.drawLine({ p1: k.vec2(ft[0] + face * 3, ft[1] - 4), p2: k.vec2(ft[0] + face * 9, ft[1] - 6), width: 1.5, color: ink });
+    k.drawLine({ p1: k.vec2(ft[0] + face * 3, ft[1] + 4), p2: k.vec2(ft[0] + face * 9, ft[1] + 6), width: 1.5, color: ink });
+  }
 }
 
 // 머리카락: 두피의 여러 뿌리에서 4마디 곡선이 뻗어나가며 휘날린다.

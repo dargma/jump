@@ -21,6 +21,10 @@ export function makePlayer(k, x, y, character) {
       hairCol: character ? character.hair : null, // 캐릭터 머리색
       bald: character ? !!character.bald : false,         // 반머리(옆머리만)
       mustache: character ? !!character.mustache : false, // 콧수염
+      style: character ? character.style : null,          // "taekwon"이면 태권도 발차기
+      belt: character ? character.belt : null,            // 띠·머리띠 색
+      face: 1,          // 바라보는 방향(1=오른쪽, -1=왼쪽). 발차기 방향
+      kickType: 0,      // 점프마다 0앞차기→1옆차기→2뒤돌려차기 순환
       w: TUNING.playerWidth,
       h: TUNING.playerHeight,
     },
@@ -37,6 +41,7 @@ export function updatePlayer(k, p, dt) {
   if (k.isKeyDown("left") || k.isKeyDown("a")) dir -= 1;
   if (k.isKeyDown("right") || k.isKeyDown("d")) dir += 1;
   p.dir = dir; // 몸 기울임 애니메이션용
+  if (dir !== 0) p.face = dir; // 바라보는 방향 유지(발차기 방향)
   p.pos.x += dir * TUNING.moveSpeed * dt;
 
   // 중력 적용
@@ -68,6 +73,7 @@ export function tryLand(k, p, plat, state) {
     p.pos.y = platTop - p.h / 2; // 발판 위에 살짝 얹기
     p.lastPlatY = plat.pos.y;    // 추락 거리 계산용
     p.landT = 0.16;              // 착지 찌그러짐 시작
+    p.kickType = ((p.kickType || 0) + 1) % 3; // 다음 점프는 다른 발차기
     jump(p, state, plat.jumpMul || 1);
     if (plat.breakable) k.destroy(plat); // 구름: 한 번 밟으면 사라짐
   }

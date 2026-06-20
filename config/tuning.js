@@ -9,6 +9,9 @@ export const TUNING = {
   // 전체 게임 속도(1=기본). 0.8~0.9면 더 차분하다. main.js에서 timeScale로 적용.
   gameSpeed: 0.9,
 
+  // 렌더 해상도 배수. ★ 1 = 가볍다(라즈베리파이/저사양), 2 = 더 선명(고사양 PC).
+  pixelDensity: 1,
+
   // 졸라맨 충돌 박스 크기(px)
   playerWidth: 30,
   playerHeight: 40,

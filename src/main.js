@@ -13,7 +13,7 @@ const k = kaplay({
   background: [188, 222, 248], // 옅은 하늘색
   letterbox: true,
   global: false,
-  pixelDensity: 2,
+  pixelDensity: TUNING.pixelDensity, // 저사양(라즈베리파이)에선 1로
 });
 
 // 한글 폰트 로드(없으면 한글이 안 보임). 다른 폰트 URL로 교체 가능.
