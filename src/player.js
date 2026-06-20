@@ -16,7 +16,11 @@ export function makePlayer(k, x, y, character) {
       hurtT: 0,         // 아야! 찌그러짐 애니메이션 남은 시간
       rocketOn: false,  // 로켓 효과 중이면 발밑에 불꽃
       skyDark: 0,       // 0(낮)~1(밤). 밤엔 졸라맨을 밝게 그려 보이게 한다
+      dir: 0,           // 좌우 입력 방향(-1/0/1). 몸 기울임 애니메이션에 사용
+      landT: 0,         // 착지 직후 찌그러짐(squash) 남은 시간
       hairCol: character ? character.hair : null, // 캐릭터 머리색
+      bald: character ? !!character.bald : false,         // 반머리(옆머리만)
+      mustache: character ? !!character.mustache : false, // 콧수염
       w: TUNING.playerWidth,
       h: TUNING.playerHeight,
     },
@@ -32,6 +36,7 @@ export function updatePlayer(k, p, dt) {
   let dir = 0;
   if (k.isKeyDown("left") || k.isKeyDown("a")) dir -= 1;
   if (k.isKeyDown("right") || k.isKeyDown("d")) dir += 1;
+  p.dir = dir; // 몸 기울임 애니메이션용
   p.pos.x += dir * TUNING.moveSpeed * dt;
 
   // 중력 적용
@@ -42,8 +47,9 @@ export function updatePlayer(k, p, dt) {
   const half = p.w / 2;
   p.pos.x = Math.max(half, Math.min(TUNING.width - half, p.pos.x));
 
-  // 아야! 애니메이션 시간 감소
+  // 애니메이션 타이머 감소
   if (p.hurtT > 0) p.hurtT -= dt;
+  if (p.landT > 0) p.landT -= dt;
 }
 
 // 발판 위에 떨어질 때만 착지 → 자동 점프(one-way: 올라갈 땐 통과).
@@ -61,6 +67,7 @@ export function tryLand(k, p, plat, state) {
   if (crossed && inX) {
     p.pos.y = platTop - p.h / 2; // 발판 위에 살짝 얹기
     p.lastPlatY = plat.pos.y;    // 추락 거리 계산용
+    p.landT = 0.16;              // 착지 찌그러짐 시작
     jump(p, state, plat.jumpMul || 1);
     if (plat.breakable) k.destroy(plat); // 구름: 한 번 밟으면 사라짐
   }

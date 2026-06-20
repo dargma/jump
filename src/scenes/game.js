@@ -88,11 +88,14 @@ export function registerGameScene(k) {
       // 1) 물리
       updatePlayer(k, player, dt);
 
-      // 2) 착지 + 추락 데미지
+      // 2) 착지 + 추락 데미지 + 착지 먼지
       const wasFalling = player.vy > 0;
       const fromPlatY = player.lastPlatY;
       k.get("platform").forEach((p) => tryLand(k, player, p, state));
-      if (wasFalling && player.vy < 0 && player.lastPlatY - fromPlatY > TUNING.bigFallDist) bigFall();
+      if (wasFalling && player.vy < 0) {
+        if (player.lastPlatY - fromPlatY > TUNING.bigFallDist) bigFall();
+        dustPuff(k, player.pos.x, player.pos.y + player.h / 2);
+      }
 
       // 3) 항상 받침 보장
       ensureCatch(k, player);
@@ -108,6 +111,19 @@ export function registerGameScene(k) {
           burstStars(k, c.pos.x, c.pos.y);
           floatText(k, c.pos.x, c.pos.y, "+" + TUNING.coinValue, k.rgb(255, 190, 40));
           k.destroy(c);
+        }
+      });
+      // 통통이: 위에서(떨어지며) 닿으면 크게 튕기고 점수(데미지 없음)
+      k.get("monster").forEach((m) => {
+        if (player.vy > 0 && collideItem(player, m)) {
+          player.vy = -TUNING.jumpVel * 1.8;
+          player.lastPlatY = m.pos.y;
+          player.landT = 0.16;
+          coinBonus += 30;
+          playItem();
+          burstStars(k, m.pos.x, m.pos.y);
+          floatText(k, m.pos.x, m.pos.y, "+30", k.rgb(120, 205, 120));
+          k.destroy(m);
         }
       });
       tickEffect(state, dt);
@@ -234,6 +250,25 @@ function burstStars(k, x, y) {
       st.life -= d; st.pos.x += st.vx * d; st.pos.y += st.vy * d; st.vy += 320 * d;
       st.opacity = Math.max(0, st.life / 0.6);
       if (st.life <= 0) k.destroy(st);
+    });
+  }
+}
+
+// 착지 먼지: 발밑에서 작은 먼지가 옆으로 퍼지며 사라진다.
+function dustPuff(k, x, y) {
+  for (let i = 0; i < 3; i++) {
+    const dx = (i - 1) * 8;
+    const p = k.add([
+      k.circle(2.5), k.pos(x + dx, y), k.color(225, 225, 230), k.opacity(0.7), k.anchor("center"),
+      { vx: dx * 3, life: 0.28 },
+    ]);
+    p.onUpdate(() => {
+      const d = k.dt();
+      p.life -= d;
+      p.pos.x += p.vx * d;
+      p.pos.y -= 12 * d;
+      p.opacity = Math.max(0, (p.life / 0.28) * 0.7);
+      if (p.life <= 0) k.destroy(p);
     });
   }
 }

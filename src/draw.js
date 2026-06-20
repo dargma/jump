@@ -17,8 +17,16 @@ export function drawPlayerComp(k) {
       const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
       const pose = poseFor(n);
 
+      // 몸 기울임(이동 방향) + 찌그러짐(아야!/착지)
+      const lean = (this.dir || 0) * 7;
+      const land = Math.max(0, this.landT || 0) / 0.16; // 1→0
+      let sx = 1, sy = 1;
+      if (hurt) { sx = 1.35; sy = 0.65; }
+      else if (land > 0) { sx = 1 + 0.28 * land; sy = 1 - 0.28 * land; } // 착지 순간 납작→복원
+
       k.pushTransform();
-      if (hurt) k.pushScale(k.vec2(1.35, 0.65)); // 납작 찌그러짐
+      if (lean !== 0) k.pushRotate(lean);
+      if (sx !== 1 || sy !== 1) k.pushScale(k.vec2(sx, sy));
 
       // 로켓 불꽃(발밑에서 펄럭)
       if (this.rocketOn) {
@@ -31,9 +39,15 @@ export function drawPlayerComp(k) {
       k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
       k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
 
-      // 머리카락: 캐릭터 머리색으로, 여러 가닥이 휘날린다(떨어질 때 솟구침).
+      // 콧수염(아저씨)
+      if (this.mustache) {
+        k.drawLine({ p1: k.vec2(-5, -10), p2: k.vec2(0, -9), width: 2.6, color: ink });
+        k.drawLine({ p1: k.vec2(0, -9), p2: k.vec2(5, -10), width: 2.6, color: ink });
+      }
+
+      // 머리카락: 캐릭터 머리색. bald면 옆머리만(반머리).
       const hairCol = this.hairCol ? k.rgb(this.hairCol[0], this.hairCol[1], this.hairCol[2]) : ink;
-      drawHair(k, vy, hairCol);
+      drawHair(k, vy, hairCol, this.bald);
 
       // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
       for (const s of [-1, 1]) {
@@ -56,15 +70,27 @@ const frac = (x) => x - Math.floor(x);
 
 // 자른 머리처럼: 가닥마다 길이·방향이 제각각. 일부는 위로 솟구치고 일부는 옆/아래로 흔들.
 // 떨어질 때(flow>0) 전체가 솟구치고, 오를 때(flow<0) 흔들리는 가닥이 아래로 처진다.
-function drawHair(k, vy, ink) {
+function drawHair(k, vy, ink, bald) {
   const t = k.time();
   const flow = Math.max(-1.3, Math.min(1.3, vy / 550));
-  const N = 14;
+  // bald(아저씨): 옆머리 몇 가닥만 짧게. 아니면 14가닥 풍성하게.
+  const N = bald ? 5 : 14;
   for (let i = 0; i < N; i++) {
-    const rx = -7 + (14 * i) / (N - 1);
+    const rx = bald
+      ? [-7, -6, 6, 7, (i === 4 ? 0 : 7)][i] // 옆머리 위주
+      : -7 + (14 * i) / (N - 1);
+    if (bald && i === 4) continue; // 가운데는 비움(반머리)
     const h1 = frac(Math.sin(i * 12.9898) * 43758.5); // 길이 변주(0~1)
     const h2 = frac(Math.sin(i * 78.233) * 12543.7);  // 가닥 종류(0~1)
     const side = rx >= 0 ? 1 : -1;
+
+    if (bald) { // 짧게 옆/아래로
+      const tx = rx + side * (4 + 3 * h1);
+      const ty = -17 - (2 + 3 * h1) - flow * 5;
+      k.drawLine({ p1: k.vec2(rx, -17), p2: k.vec2(tx, ty), width: 1.4, color: ink });
+      k.drawLine({ p1: k.vec2(tx, ty), p2: k.vec2(tx + side * 2, ty + 3), width: 1.2, color: ink });
+      continue;
+    }
 
     let tipX, tipY;
     if (h2 < 0.3) {                                   // 옆·아래로 흔들리는 가닥
@@ -144,6 +170,27 @@ export function drawCoinComp(k) {
       k.drawCircle({ pos: k.vec2(0, 0), radius: 9, color: k.rgb(255, 205, 60) });
       k.drawCircle({ pos: k.vec2(0, 0), radius: 9, fill: false, outline: { width: 2, color: k.rgb(210, 150, 30) } });
       k.drawCircle({ pos: k.vec2(-3, -3), radius: 2.4, color: k.rgb(255, 255, 255), opacity: shine });
+    },
+  };
+}
+
+// 통통이 몬스터: 위에서 밟으면 크게 튕겨주는 귀여운 친구(데미지 없음).
+export function drawMonsterComp(k) {
+  return {
+    draw() {
+      const bob = Math.sin(k.time() * 4) * 1.5;
+      const body = k.rgb(120, 205, 120);
+      const eyeW = k.rgb(255, 255, 255);
+      const eyeB = k.rgb(40, 40, 60);
+      k.drawEllipse({ pos: k.vec2(0, bob), radiusX: 15, radiusY: 13, color: body });
+      k.drawLine({ p1: k.vec2(0, -12 + bob), p2: k.vec2(0, -20 + bob), width: 2, color: body });
+      k.drawCircle({ pos: k.vec2(0, -21 + bob), radius: 2.5, color: k.rgb(255, 230, 90) });
+      k.drawCircle({ pos: k.vec2(-5, -2 + bob), radius: 4, color: eyeW });
+      k.drawCircle({ pos: k.vec2(5, -2 + bob), radius: 4, color: eyeW });
+      k.drawCircle({ pos: k.vec2(-5, -2 + bob), radius: 2, color: eyeB });
+      k.drawCircle({ pos: k.vec2(5, -2 + bob), radius: 2, color: eyeB });
+      k.drawLine({ p1: k.vec2(-4, 6 + bob), p2: k.vec2(0, 8 + bob), width: 2, color: eyeB });
+      k.drawLine({ p1: k.vec2(0, 8 + bob), p2: k.vec2(4, 6 + bob), width: 2, color: eyeB });
     },
   };
 }

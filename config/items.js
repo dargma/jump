@@ -2,9 +2,9 @@
 // 새 아이템 추가: 여기에 객체 하나 추가 → src/item.js 의 효과 분기 한 줄 추가. 끝.
 //
 // type 필드(스키마 핵심):
-//   "timed"   : duration(초) 동안 효과가 지속된다 (날개, 부스터)
-//   "instant" : 즉시 1회 발동, 지속시간 없음 (갈고리)
-// → 이렇게 나눠두면 갈고리(instant)를 켜도 timed 스키마(duration)가 안 깨진다.
+//   "timed"   : duration(초) 동안 효과가 지속된다 (날개, 로켓)
+//   "instant" : 즉시 1회 발동, 지속시간 없음 (순간이동)
+// → 이렇게 나눠두면 instant 아이템을 켜도 timed 스키마(duration)가 안 깨진다.
 export const ITEMS = [
   {
     id: "wing",
@@ -15,16 +15,6 @@ export const ITEMS = [
     color: [120, 200, 255],
     desc: "일정 시간 점프가 높아짐",
     jumpMultiplier: 1.6, // 점프 속도 배수(높이는 약 2.5배). 너무 크면 발판 놓쳐 떨어짐
-  },
-  {
-    id: "booster",
-    name: "부스터",
-    type: "timed",
-    duration: 4,
-    spawnChance: 0,      // 0 = 아직 등장 안 함(다음 단계에서 켠다)
-    color: [255, 180, 80],
-    desc: "일정 시간 점프가 더 자주/통통 (점프 빈도 증가)",
-    // 동작(예정): 착지 타이밍과 무관하게 더 자주 튀어오르도록 점프 주기를 줄인다.
   },
   {
     id: "hook",

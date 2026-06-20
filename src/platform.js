@@ -1,7 +1,7 @@
 // 발판: 종류별(일반/트램펄린/구름/움직이는) 무한 절차생성 + 난이도 완만 + 화면 밖 정리.
 import { TUNING } from "../config/tuning.js";
 import { drawPlatformComp } from "./draw.js";
-import { maybeSpawnItem, maybeSpawnCoin, cleanupCollectiblesBelow } from "./item.js";
+import { maybeSpawnItem, maybeSpawnCoin, maybeSpawnMonster, cleanupCollectiblesBelow } from "./item.js";
 import { PLATFORM_TYPES, NORMAL_TYPE } from "../config/platforms.js";
 
 // 발판 하나 생성. 종류(def)에 따라 점프세기/부서짐/이동 특성을 갖는다.
@@ -46,6 +46,7 @@ export function initialPlatforms(k) {
     makePlatform(k, x, y, pickType(k, y));
     maybeSpawnItem(k, x, y);
     maybeSpawnCoin(k, x, y);
+    maybeSpawnMonster(k, x, y);
   }
   return y;
 }
@@ -61,6 +62,7 @@ export function ensurePlatformsAbove(k, topY, camY, goalY) {
     makePlatform(k, x, topY, pickType(k, topY));
     maybeSpawnItem(k, x, topY);
     maybeSpawnCoin(k, x, topY);
+    maybeSpawnMonster(k, x, topY);
   }
   return topY;
 }

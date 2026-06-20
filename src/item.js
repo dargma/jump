@@ -2,7 +2,7 @@
 // 데이터는 config/items.js, 여기는 "효과 로직"만.
 import { TUNING } from "../config/tuning.js";
 import { ITEMS } from "../config/items.js";
-import { drawItemComp, drawCoinComp } from "./draw.js";
+import { drawItemComp, drawCoinComp, drawMonsterComp } from "./draw.js";
 
 // 발판 위에 확률적으로 아이템 1개 스폰(한 발판에 최대 1개).
 export function maybeSpawnItem(k, x, platY) {
@@ -35,6 +35,18 @@ export function maybeSpawnCoin(k, x, platY) {
   ]);
 }
 
+// 발판 위쪽에 통통이 몬스터 스폰(밟으면 크게 튕김).
+export function maybeSpawnMonster(k, x, platY) {
+  if (k.rand() >= TUNING.monsterChance) return;
+  const cx = Math.max(20, Math.min(TUNING.width - 20, x + k.rand(-30, 30)));
+  k.add([
+    k.pos(cx, platY - 46),
+    drawMonsterComp(k),
+    { w: 30, h: 28 },
+    "monster",
+  ]);
+}
+
 // 졸라맨 ↔ 아이템 AABB 충돌(중심 기준).
 export function collideItem(player, it) {
   return (
@@ -54,7 +66,6 @@ function startTimed(state, def) {
   state.activeItem = { def, timeLeft: def.duration };
   if (def.id === "wing") state.jumpMultiplier = def.jumpMultiplier; // 날개: 점프 더 높이
   if (def.id === "rocket") state.rocketSpeed = def.climbSpeed;      // 로켓: 위로 슈웅
-  // booster: 점프 빈도 증가 (다음 단계)
 }
 
 // 매 프레임 효과 시간 감소, 끝나면 효과 OFF.
@@ -100,5 +111,8 @@ export function cleanupCollectiblesBelow(k, floorY) {
   });
   k.get("coin").forEach((c) => {
     if (c.pos.y > floorY) k.destroy(c);
+  });
+  k.get("monster").forEach((m) => {
+    if (m.pos.y > floorY) k.destroy(m);
   });
 }

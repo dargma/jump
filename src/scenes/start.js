@@ -11,25 +11,25 @@ export function registerStartScene(k) {
     k.add([k.text("하늘 위 공주를 구하러!", { size: 18, font: FONT }), k.pos(TUNING.width / 2, 132), k.anchor("center"), k.color(90, 100, 140)]);
     k.add([k.text("캐릭터를 골라줘", { size: 22, font: FONT }), k.pos(TUNING.width / 2, 210), k.anchor("center"), k.color(60, 60, 90)]);
 
+    const n = CHARACTERS.length;
+    const step = 94;
     CHARACTERS.forEach((c, i) => {
-      const x = TUNING.width / 2 + (i - 1) * 112;
-      const y = 310;
+      const x = TUNING.width / 2 + (i - (n - 1) / 2) * step;
+      const y = 320;
       // 클릭 카드
       const card = k.add([
-        k.rect(88, 116, { radius: 14 }), k.pos(x, y), k.anchor("center"),
+        k.rect(82, 116, { radius: 14 }), k.pos(x, y), k.anchor("center"),
         k.color(255, 255, 255), k.outline(3, k.rgb(215, 222, 235)), k.area(),
       ]);
-      // 머리색 입힌 졸라맨 미리보기
-      k.add([k.pos(x, y - 4), drawPlayerComp(k), { hairCol: c.hair, vy: 0, hurtT: 0, rocketOn: false, skyDark: 0 }]);
+      // 캐릭터 미리보기(머리색/반머리/콧수염 반영)
+      k.add([k.pos(x, y - 4), drawPlayerComp(k), { hairCol: c.hair, bald: !!c.bald, mustache: !!c.mustache, vy: 0, hurtT: 0, rocketOn: false, skyDark: 0, dir: 0, landT: 0 }]);
       // 이름
-      k.add([k.text(c.name, { size: 16, font: FONT }), k.pos(x, y + 44), k.anchor("center"), k.color(60, 60, 90)]);
+      k.add([k.text(c.name, { size: 15, font: FONT }), k.pos(x, y + 44), k.anchor("center"), k.color(60, 60, 90)]);
       card.onClick(() => pick(k, i));
+      k.onKeyPress(String(i + 1), () => pick(k, i)); // 숫자키로도 선택
     });
 
-    k.add([k.text("캐릭터를 누르면 시작! (또는 1·2·3)", { size: 15, font: FONT }), k.pos(TUNING.width / 2, 430), k.anchor("center"), k.color(120, 120, 150)]);
-    k.onKeyPress("1", () => pick(k, 0));
-    k.onKeyPress("2", () => pick(k, 1));
-    k.onKeyPress("3", () => pick(k, 2));
+    k.add([k.text("캐릭터를 누르면 시작! (또는 숫자키)", { size: 15, font: FONT }), k.pos(TUNING.width / 2, 430), k.anchor("center"), k.color(120, 120, 150)]);
   });
 }
 
