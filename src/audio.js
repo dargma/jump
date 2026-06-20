@@ -61,12 +61,6 @@ export function playKiai() {
   tone(300, 0.05, 0.12, "square", 0.4);
 }
 
-// 발판 격파("퍽!")
-export function playBreak() {
-  tone(200, 0, 0.05, "sawtooth", 0.45);
-  tone(110, 0.04, 0.13, "sawtooth", 0.4);
-}
-
 // 게임오버: 점점 내려가는 슬픈 음
 export function playGameOver() {
   tone(440, 0, 0.25, "sawtooth", 0.4);

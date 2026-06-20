@@ -8,7 +8,7 @@ import { initialPlatforms, ensurePlatformsAbove, cleanupBelow, makePlatform } fr
 import { drawPrincessComp, drawCloudComp, drawBirdComp, drawHeartComp } from "../draw.js";
 import { collideItem, applyEffect, tickEffect } from "../item.js";
 import { FACTS } from "../../config/facts.js";
-import { ensureAudio, startBGM, stopBGM, playItem, playOuch, playGameOver, playKiai, playBreak } from "../audio.js";
+import { ensureAudio, startBGM, stopBGM, playItem, playOuch, playGameOver, playKiai } from "../audio.js";
 
 const FONT = "kr";
 const BEST_KEY = "doodle-prince-best";
@@ -117,9 +117,8 @@ export function registerGameScene(k) {
         if (player.vy < -TUNING.jumpVel * 1.3 && k.shake) k.shake(3); // 트램펄린/날개 큰 점프 타격감
       }
 
-      // 3) 항상 받침 보장 + 태권 발차기로 머리 위 발판 격파
+      // 3) 항상 받침 보장
       ensureCatch(k, player);
-      breakAbove(k, player);
 
       // 4) 아이템(가방) + 코인(점수)
       k.get("item").forEach((it) => {
@@ -371,43 +370,6 @@ function factBanner(k, text) {
   };
   bg.onUpdate(() => fade(bg, 0.72));
   t.onUpdate(() => fade(t, 1));
-}
-
-// 태권 발차기 중이면 머리 위에 닿은 발판을 격파(부서지며 사라짐)
-function breakAbove(k, player) {
-  if (player.style !== "taekwon" || player.moveT <= 0 || player.moveType === 2) return; // 발차기일 때만
-  const head = player.pos.y - player.h / 2;
-  for (const p of k.get("platform")) {
-    if (p.is("goal")) continue; // 공주 받침대는 못 깬다
-    const dy = p.pos.y - head;
-    if (dy > -34 && dy < 6 && Math.abs(p.pos.x - player.pos.x) < TUNING.platformWidth / 2 + 6) {
-      shatterPlatform(k, p);
-    }
-  }
-}
-
-// 발판 격파 애니메이션: 나무 파편이 튀고 굴러 떨어지며 사라진다.
-function shatterPlatform(k, p) {
-  playBreak();
-  if (k.shake) k.shake(4);
-  for (let i = 0; i < 6; i++) {
-    const fr = k.add([
-      k.rect(11, 8, { radius: 2 }), k.pos(p.pos.x + (i - 2.5) * 11, p.pos.y), k.anchor("center"),
-      k.color(180, 140, 90), k.opacity(1), k.rotate(0),
-      { vx: (i - 2.5) * 45, vy: -50 + k.rand(-30, 30), va: k.rand(-260, 260), life: 0.7 },
-    ]);
-    fr.onUpdate(() => {
-      const d = k.dt();
-      fr.life -= d;
-      fr.pos.x += fr.vx * d;
-      fr.pos.y += fr.vy * d;
-      fr.vy += 700 * d;
-      fr.angle += fr.va * d;
-      fr.opacity = Math.max(0, fr.life / 0.7);
-      if (fr.life <= 0) k.destroy(fr);
-    });
-  }
-  k.destroy(p);
 }
 
 // 공주 받침대 + 공주
