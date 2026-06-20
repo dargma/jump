@@ -7,7 +7,7 @@ export const TUNING = {
   height: 600,
 
   // 전체 게임 속도(1=기본). 0.8~0.9면 더 차분하다. main.js에서 timeScale로 적용.
-  gameSpeed: 0.85,
+  gameSpeed: 0.9,
 
   // 졸라맨 충돌 박스 크기(px)
   playerWidth: 30,
@@ -43,11 +43,7 @@ export const TUNING = {
   // 코인(점수 보너스): 실력과 무관한 쉬운 보상
   coinChance: 0.16,    // 발판마다 코인 등장 확률
   coinValue: 25,       // 코인 1개 점수
-
-  // 공주(승리 연출 트리거). ★ score(점수) 단위.
-  // "공주 만나는 점수"를 코드에 하드코딩하지 말고 항상 여기서만 바꾼다.
-  // 검증결과: 완벽 플레이 기준 3000=약210초, 1000=약70초. 아이 기준 1000으로.
-  princessHeight: 1000,
+  // 공주(승리)까지의 높이는 config/stages.js 의 스테이지 climb 합으로 정해진다.
 
   // 체력 & 추락 데미지 (즉사 대신 하트제)
   maxHealth: 3,     // 하트 개수. 0이 되면 게임오버

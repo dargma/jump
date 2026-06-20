@@ -2,6 +2,7 @@
 import { TUNING } from "../../config/tuning.js";
 import { STAGES, STORY } from "../../config/stages.js";
 import { ITEMS } from "../../config/items.js";
+import { CHARACTERS, selected } from "../../config/characters.js";
 import { makePlayer, updatePlayer, tryLand } from "../player.js";
 import { initialPlatforms, ensurePlatformsAbove, cleanupBelow, makePlatform } from "../platform.js";
 import { drawPrincessComp, drawCloudComp, drawBirdComp, drawHeartComp } from "../draw.js";
@@ -19,7 +20,8 @@ export function registerGameScene(k) {
     const sky = makeSky(k);
     spawnSky(k);
 
-    const player = makePlayer(k, TUNING.width / 2, 0);
+    const character = CHARACTERS[selected.index] || CHARACTERS[0];
+    const player = makePlayer(k, TUNING.width / 2, 0, character);
     let topY = initialPlatforms(k);
 
     // 공주는 3개 스테이지를 모두 오른 높이에 있다.

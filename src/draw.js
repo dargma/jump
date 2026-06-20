@@ -31,8 +31,9 @@ export function drawPlayerComp(k) {
       k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
       k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
 
-      // 머리카락: 여러 가닥이 곡선으로 휘날린다. 떨어질 때 솟구치고 오를 때 처짐.
-      drawHair(k, vy, ink);
+      // 머리카락: 캐릭터 머리색으로, 여러 가닥이 휘날린다(떨어질 때 솟구침).
+      const hairCol = this.hairCol ? k.rgb(this.hairCol[0], this.hairCol[1], this.hairCol[2]) : ink;
+      drawHair(k, vy, hairCol);
 
       // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
       for (const s of [-1, 1]) {
@@ -51,21 +52,38 @@ export function drawPlayerComp(k) {
 
 // 머리카락: 두피의 여러 뿌리에서 4마디 곡선이 뻗어나가며 휘날린다.
 // flow>0(하강): 공기저항으로 위로 솟구침 / flow<0(상승): 아래로 처짐.
+const frac = (x) => x - Math.floor(x);
+
+// 자른 머리처럼: 가닥마다 길이·방향이 제각각. 일부는 위로 솟구치고 일부는 옆/아래로 흔들.
+// 떨어질 때(flow>0) 전체가 솟구치고, 오를 때(flow<0) 흔들리는 가닥이 아래로 처진다.
 function drawHair(k, vy, ink) {
   const t = k.time();
   const flow = Math.max(-1.3, Math.min(1.3, vy / 550));
-  // 가닥 많고(11) 얇게. 마디를 잘게(6) 나눠 부드러운 곡선으로 휘날린다.
-  const roots = [-6.5, -5.2, -3.9, -2.6, -1.3, 0, 1.3, 2.6, 3.9, 5.2, 6.5];
-  const seg = 6;
-  for (const rx of roots) {
-    const dir = rx >= 0 ? 1 : -1;
+  const N = 14;
+  for (let i = 0; i < N; i++) {
+    const rx = -7 + (14 * i) / (N - 1);
+    const h1 = frac(Math.sin(i * 12.9898) * 43758.5); // 길이 변주(0~1)
+    const h2 = frac(Math.sin(i * 78.233) * 12543.7);  // 가닥 종류(0~1)
+    const side = rx >= 0 ? 1 : -1;
+
+    let tipX, tipY;
+    if (h2 < 0.3) {                                   // 옆·아래로 흔들리는 가닥
+      tipX = rx + side * (6 + 5 * h1);
+      tipY = -19 - (1 + 5 * h1) - flow * 8;
+    } else {                                          // 위로 솟구치는 가닥(길이 제각각)
+      tipX = rx + side * (1 + 3 * h1);
+      tipY = -19 - (10 + 22 * h1) - flow * 11;
+    }
+
+    // 뿌리→끝 부드러운 곡선 + 살랑 파동
     let prev = k.vec2(rx, -19);
-    for (let j = 1; j <= seg; j++) {
-      const up = -19 - j * (2.9 + flow * 2.2);                       // 위로 뻗음(하강일수록 더)
-      const wave = Math.sin(t * 6 + rx * 0.6 - j * 0.55) * (1.0 * j); // 부드러운 파동
-      const out = dir * j * 0.75;                                     // 끝으로 갈수록 살짝 바깥
-      const cur = k.vec2(rx + out + wave, up);
-      k.drawLine({ p1: prev, p2: cur, width: Math.max(0.7, 1.5 - j * 0.14), color: ink });
+    const M = 4;
+    for (let j = 1; j <= M; j++) {
+      const a = j / M;
+      const cx = lerpN(rx, tipX, a) + Math.sin(t * 6 + i + a * 3) * (1.4 * a);
+      const cy = lerpN(-19, tipY, a);
+      const cur = k.vec2(cx, cy);
+      k.drawLine({ p1: prev, p2: cur, width: Math.max(0.7, 1.5 - a * 0.9), color: ink });
       prev = cur;
     }
   }

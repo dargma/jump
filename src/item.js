@@ -70,9 +70,27 @@ export function tickEffect(state, dt) {
 
 // --- instant(즉발형) ---
 function runInstant(k, state, player, def) {
-  // hook(갈고리): 위쪽 가장 가까운 발판으로 휙 당겨감 (다음 단계)
-  //   - k.get("platform") 중 player보다 위(y가 작은)에서 가장 가까운 발판을 찾아
-  //   - player.pos 를 그 발판 위로 옮기고 점프시킨다.
+  if (def.id === "hook") teleportUp(k, player, def.teleportUp || 280);
+}
+
+// 순간이동: 위쪽 teleportUp 높이 근처의 발판으로 휙 이동(없으면 그냥 위로).
+function teleportUp(k, player, up) {
+  const target = player.pos.y - up;
+  let best = null, bestD = Infinity;
+  for (const p of k.get("platform")) {
+    if (p.pos.y < player.pos.y - 40) {
+      const d = Math.abs(p.pos.y - target);
+      if (d < bestD) { bestD = d; best = p; }
+    }
+  }
+  if (best) {
+    player.pos.x = best.pos.x;
+    player.pos.y = best.pos.y - TUNING.platformHeight / 2 - player.h / 2;
+    player.lastPlatY = best.pos.y;
+  } else {
+    player.pos.y -= up; // 위에 발판이 없으면 그냥 위로(받침 시스템이 받쳐줌)
+  }
+  player.vy = -TUNING.jumpVel; // 살짝 튕겨 올라감
 }
 
 // 화면 아래로 내려간 수집물(아이템·코인) 제거.

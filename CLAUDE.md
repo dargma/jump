@@ -18,20 +18,23 @@ doodle-prince/
 ├─ index.html        # 진입점. Kaplay CDN 로드 + main.js 실행
 ├─ src/              # 게임 로직
 │  ├─ main.js        #   Kaplay 초기화 + 씬 등록 + 시작
-│  ├─ player.js      #   졸라맨: 자동 점프, 좌우 이동, 양옆 순환
-│  ├─ platform.js    #   발판 생성 / 무한 절차생성 / 재활용
-│  ├─ item.js        #   아이템 스폰 + 효과 발동 (데이터는 config/items.js)
+│  ├─ player.js      #   졸라맨: 자동 점프, 좌우 이동, 양옆 벽, 추락 데미지
+│  ├─ platform.js    #   발판 생성 / 무한 절차생성 / 난이도 램프 / 정리
+│  ├─ item.js        #   아이템·코인 스폰 + 효과 발동 (데이터는 config/items.js)
 │  ├─ audio.js       #   배경음악 + 효과음 (Web Audio로 합성, 음원 파일 없이)
-│  ├─ draw.js        #   선·도형으로 졸라맨/발판/공주 그리기 (나중에 이미지 교체 지점)
+│  ├─ draw.js        #   선·도형으로 졸라맨/발판/공주/하트 그리기 (이미지 교체 지점)
 │  └─ scenes/
-│     ├─ game.js     #   게임 플레이 씬 (카메라, 점수, 게임오버 판정)
-│     └─ gameover.js #   게임오버 + 다시하기
+│     ├─ start.js    #   시작화면 (캐릭터 선택)
+│     ├─ howto.js    #   미션 설명 화면
+│     ├─ game.js     #   게임 플레이 씬 (카메라, 점수, 스테이지, 체력)
+│     └─ gameover.js #   게임오버 / 승리 + 다시하기
 ├─ config/
-│  ├─ tuning.js      # ★ game feel 숫자 (중력/점프/이동/카메라/발판/난이도/코인)
-│  ├─ items.js       # ★ 아이템 정의 (데이터)
+│  ├─ tuning.js      # ★ game feel 숫자 (중력/점프/이동/카메라/발판/난이도/코인/속도)
+│  ├─ items.js       # ★ 아이템 정의 (날개/부스터/순간이동/로켓)
 │  ├─ platforms.js   # ★ 발판 종류 정의 (일반/트램펄린/구름/움직이는)
-│  └─ stages.js      # ★ 3스테이지 정의 (테마/하늘색/보상/스토리)
-├─ assets/           # 나중에 이미지/사운드
+│  ├─ stages.js      # ★ 3스테이지 정의 (테마/하늘색/보상/스토리)
+│  └─ characters.js  # ★ 고를 수 있는 캐릭터 (머리색)
+├─ assets/           # intro.svg(소개 애니메이션), 나중에 이미지/사운드
 ├─ GDD.md            # 게임 디자인 문서
 └─ CLAUDE.md         # 이 파일
 ```
@@ -56,14 +59,16 @@ doodle-prince/
 | 졸라맨/발판/공주 **모양**을 바꾸기 | `src/draw.js` |
 | 그림을 이미지로 교체 | `src/draw.js` (그리는 함수만 교체) + `assets/` |
 | 발판이 닿을락말락(난이도) | `config/tuning.js` (`platformGapMax`, `platformMaxStepX`) |
-| 공주 만나는 점수 | `config/tuning.js` (`princessHeight`) |
+| 공주 만나는 높이(스테이지 합) | `config/stages.js` (`climb`) |
 | 배경음악/효과음 (멜로디·볼륨) | `src/audio.js` |
-| 점프 애니메이션 자세 | `src/draw.js` (`PUSH`/`APEX`/`LAND` 포즈) |
+| 점프 애니메이션 자세 / 머리카락 | `src/draw.js` (`PUSH`/`APEX`/`LAND`, `drawHair`) |
 | 하트 개수 / 추락 데미지 기준 | `config/tuning.js` (`maxHealth`, `bigFallDist`) |
 | 떨어질 때 화면 따라가는 범위 | `config/tuning.js` (`cameraTopFrac`, `cameraBotFrac`) |
 | 하늘 배경(구름·새) | `src/scenes/game.js` (`spawnSky`) + `src/draw.js` |
-| 하늘 테마(낮/노을/밤/우주) | `src/scenes/game.js` (`SKY_STOPS`) |
-| 칭찬 배너 간격 / 코인 팝업 | `src/scenes/game.js` (`celebrate`, `floatScore`) |
+| 하늘 테마 색(스테이지별) | `config/stages.js` (`sky`, `dark`) |
+| 칭찬/스토리 배너 · 코인 팝업 | `src/scenes/game.js` (`banner`, `floatText`) |
+| 고를 수 있는 캐릭터 | `config/characters.js` |
+| 시작화면 / 미션 설명 화면 | `src/scenes/start.js` · `src/scenes/howto.js` |
 | 시작 하늘 색 | `src/main.js` (`background`) |
 | 게임오버/승리/다시하기 화면 | `src/scenes/gameover.js` |
 

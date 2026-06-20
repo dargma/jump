@@ -1,6 +1,8 @@
 // 진입점: Kaplay 초기화 → 한글 폰트 로드 → 씬 등록 → 게임 시작.
 import kaplay from "https://unpkg.com/kaplay@3001/dist/kaplay.mjs";
 import { TUNING } from "../config/tuning.js";
+import { registerStartScene } from "./scenes/start.js";
+import { registerHowtoScene } from "./scenes/howto.js";
 import { registerGameScene } from "./scenes/game.js";
 import { registerGameOverScene } from "./scenes/gameover.js";
 
@@ -20,7 +22,9 @@ k.loadFont("kr", "https://cdn.jsdelivr.net/fontsource/fonts/jua@latest/korean-40
 // 전체 게임 속도(0.8~0.9면 더 차분). dt 기반 움직임이 전부 함께 느려진다.
 if (k.debug) k.debug.timeScale = TUNING.gameSpeed;
 
+registerStartScene(k);
+registerHowtoScene(k);
 registerGameScene(k);
 registerGameOverScene(k);
 
-k.go("game");
+k.go("start"); // 시작화면(캐릭터 선택) → 미션 설명 → 게임
