@@ -13,8 +13,8 @@ export const ITEMS = [
     duration: 5,         // 효과 지속(초)
     spawnChance: 0.2,    // 발판마다 등장 확률(0~1)
     color: [120, 200, 255],
-    desc: "일정 시간 점프 높이 2배",
-    jumpMultiplier: 2,   // 효과 세기(날개 전용 파라미터)
+    desc: "일정 시간 점프가 높아짐",
+    jumpMultiplier: 1.6, // 점프 속도 배수(높이는 약 2.5배). 너무 크면 발판 놓쳐 떨어짐
   },
   {
     id: "booster",

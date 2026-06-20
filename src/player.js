@@ -19,7 +19,7 @@ export function makePlayer(k, x, y) {
   ]);
 }
 
-// 매 프레임: 좌우 입력 → 중력 → 양옆 순환
+// 매 프레임: 좌우 입력 → 중력 → 양옆 벽(순환 없음)
 export function updatePlayer(k, p, dt) {
   p.prevY = p.pos.y;
 
@@ -33,9 +33,9 @@ export function updatePlayer(k, p, dt) {
   p.vy += TUNING.gravity * dt;
   p.pos.y += p.vy * dt;
 
-  // 화면 양옆 순환(왼쪽으로 나가면 오른쪽에서 등장)
-  if (p.pos.x < 0) p.pos.x += TUNING.width;
-  if (p.pos.x > TUNING.width) p.pos.x -= TUNING.width;
+  // 양옆은 벽: 화면 밖으로 못 나간다(순간이동 없음).
+  const half = p.w / 2;
+  p.pos.x = Math.max(half, Math.min(TUNING.width - half, p.pos.x));
 }
 
 // 발판 위에 떨어질 때만 착지 → 자동 점프(one-way: 올라갈 땐 통과).

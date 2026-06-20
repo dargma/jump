@@ -152,3 +152,28 @@ function sparkle(k, x, y, s, color) {
   k.drawLine({ p1: k.vec2(x, y - s), p2: k.vec2(x, y + s), width: 2, color });
   k.drawLine({ p1: k.vec2(x - s, y), p2: k.vec2(x + s, y), width: 2, color });
 }
+
+// 하늘 구름(동그라미 뭉치). 배경에서 천천히 흐른다.
+export function drawCloudComp(k) {
+  const w = k.rgb(255, 255, 255);
+  return {
+    draw() {
+      k.drawRect({ width: 42, height: 14, pos: k.vec2(0, 6), anchor: "center", radius: 7, color: w, opacity: 0.92 });
+      k.drawCircle({ pos: k.vec2(-13, 1), radius: 11, color: w, opacity: 0.92 });
+      k.drawCircle({ pos: k.vec2(0, -5), radius: 14, color: w, opacity: 0.92 });
+      k.drawCircle({ pos: k.vec2(13, 1), radius: 11, color: w, opacity: 0.92 });
+    },
+  };
+}
+
+// 새: 'ㅅ' 모양 두 날개가 펄럭인다(시간 기반).
+export function drawBirdComp(k) {
+  const c = k.rgb(80, 90, 120);
+  return {
+    draw() {
+      const flap = Math.sin(k.time() * 8) * 3; // 날갯짓
+      k.drawLine({ p1: k.vec2(-8, 0), p2: k.vec2(0, -3 - flap), width: 2, color: c });
+      k.drawLine({ p1: k.vec2(0, -3 - flap), p2: k.vec2(8, 0), width: 2, color: c });
+    },
+  };
+}

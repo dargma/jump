@@ -39,10 +39,13 @@ export function initialPlatforms(k) {
 }
 
 // 카메라가 올라가면 화면 위쪽으로 발판을 계속 생성. 반환: 갱신된 topY
-export function ensurePlatformsAbove(k, topY, camY) {
+// goalY 위쪽(공주 받침대 위)으로는 일반 발판을 만들지 않는다.
+export function ensurePlatformsAbove(k, topY, camY, goalY) {
   const ceiling = camY - TUNING.height; // 화면 위 한 칸 더 미리 만들어 둠
   while (topY > ceiling) {
-    topY -= randGap(k);
+    const ny = topY - randGap(k);
+    if (goalY != null && ny <= goalY) break; // 공주 위로는 생성 금지
+    topY = ny;
     const x = nextX(k);
     makePlatform(k, x, topY);
     maybeSpawnItem(k, x, topY);
