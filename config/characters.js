@@ -6,7 +6,7 @@ export const CHARACTERS = [
   { id: "blue",    name: "파랑이",   hair: [70, 150, 255] },
   { id: "taekwon", name: "태권소년", hair: [55, 48, 58], style: "taekwon", belt: [220, 45, 45] },
   { id: "green",   name: "초록이",   hair: [70, 200, 120] },
-  { id: "uncle",   name: "아저씨",   hair: [120, 120, 130], bald: true, mustache: true },
+  { id: "uncle",   name: "아저씨",   hair: [120, 120, 130], bald: true, mustache: true, suit: true },
 ];
 
 // 시작화면에서 고른 캐릭터(게임/다시하기에서 공유).

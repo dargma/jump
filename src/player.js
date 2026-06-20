@@ -21,10 +21,12 @@ export function makePlayer(k, x, y, character) {
       hairCol: character ? character.hair : null, // 캐릭터 머리색
       bald: character ? !!character.bald : false,         // 반머리(옆머리만)
       mustache: character ? !!character.mustache : false, // 콧수염
-      style: character ? character.style : null,          // "taekwon"이면 태권도 발차기
+      suit: character ? !!character.suit : false,         // 양복(아저씨)
+      style: character ? character.style : null,          // "taekwon"이면 태권도 동작
       belt: character ? character.belt : null,            // 띠·머리띠 색
-      face: 1,          // 바라보는 방향(1=오른쪽, -1=왼쪽). 발차기 방향
-      kickType: 0,      // 점프마다 0앞차기→1옆차기→2뒤돌려차기 순환
+      face: 1,          // 바라보는 방향(1=오른쪽, -1=왼쪽). 동작 방향
+      moveT: 0,         // 태권 동작 남은 시간(버튼 누르면 0.45). 0이면 차분히 점프
+      moveType: 0,      // 0 앞차기 / 1 회전발차기 / 2 주먹찌르기 (버튼마다 순환)
       w: TUNING.playerWidth,
       h: TUNING.playerHeight,
     },
@@ -55,6 +57,7 @@ export function updatePlayer(k, p, dt) {
   // 애니메이션 타이머 감소
   if (p.hurtT > 0) p.hurtT -= dt;
   if (p.landT > 0) p.landT -= dt;
+  if (p.moveT > 0) p.moveT -= dt;
 }
 
 // 발판 위에 떨어질 때만 착지 → 자동 점프(one-way: 올라갈 땐 통과).
@@ -73,7 +76,6 @@ export function tryLand(k, p, plat, state) {
     p.pos.y = platTop - p.h / 2; // 발판 위에 살짝 얹기
     p.lastPlatY = plat.pos.y;    // 추락 거리 계산용
     p.landT = 0.16;              // 착지 찌그러짐 시작
-    p.kickType = ((p.kickType || 0) + 1) % 3; // 다음 점프는 다른 발차기
     jump(p, state, plat.jumpMul || 1);
     if (plat.breakable) k.destroy(plat); // 구름: 한 번 밟으면 사라짐
   }

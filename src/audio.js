@@ -55,6 +55,18 @@ export function playOuch() {
   tone(196, 0.08, 0.16, "sawtooth", 0.4);
 }
 
+// 태권 기합("얍!")
+export function playKiai() {
+  tone(620, 0, 0.06, "square", 0.4);
+  tone(300, 0.05, 0.12, "square", 0.4);
+}
+
+// 발판 격파("퍽!")
+export function playBreak() {
+  tone(200, 0, 0.05, "sawtooth", 0.45);
+  tone(110, 0.04, 0.13, "sawtooth", 0.4);
+}
+
 // 게임오버: 점점 내려가는 슬픈 음
 export function playGameOver() {
   tone(440, 0, 0.25, "sawtooth", 0.4);

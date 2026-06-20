@@ -14,7 +14,7 @@ export function registerHowtoScene(k) {
     const lines = [
       "← → 로 좌우 이동 (점프는 자동!)",
       "스페이스로 아이템 사용",
-      "발판을 밟고 위로, 위로!",
+      "태권소년은 화살표 연타로 발차기 콤보!",
       `${STAGES.length}개 세계를 지나 공주를 구하자`,
     ];
     lines.forEach((t, i) => k.add([k.text("• " + t, { size: 17, font: FONT }), k.pos(44, 210 + i * 42), k.color(50, 50, 80)]));

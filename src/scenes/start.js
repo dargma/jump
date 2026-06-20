@@ -23,8 +23,9 @@ export function registerStartScene(k) {
       ]);
       // 캐릭터 미리보기(머리색/반머리/콧수염 반영)
       k.add([k.pos(x, y - 4), drawPlayerComp(k), {
-        hairCol: c.hair, bald: !!c.bald, mustache: !!c.mustache, style: c.style, belt: c.belt,
-        vy: 0, hurtT: 0, rocketOn: false, skyDark: 0, dir: 0, landT: 0, face: 1, kickType: 0,
+        hairCol: c.hair, bald: !!c.bald, mustache: !!c.mustache, suit: !!c.suit, style: c.style, belt: c.belt,
+        vy: 0, hurtT: 0, rocketOn: false, skyDark: 0, dir: 0, landT: 0, face: 1,
+        moveT: c.style === "taekwon" ? 0.25 : 0, moveType: 0, // 태권소년은 발차기 자세로 미리보기
       }]);
       // 이름
       k.add([k.text(c.name, { size: 15, font: FONT }), k.pos(x, y + 44), k.anchor("center"), k.color(60, 60, 90)]);
