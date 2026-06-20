@@ -49,6 +49,12 @@ export function playItem() {
   tone(1320, 0.1, 0.18, "triangle", 0.5);
 }
 
+// 아야!: 큰 추락 데미지. 짧고 익살스러운 '뿅' 하강음.
+export function playOuch() {
+  tone(330, 0, 0.1, "sawtooth", 0.4);
+  tone(196, 0.08, 0.16, "sawtooth", 0.4);
+}
+
 // 게임오버: 점점 내려가는 슬픈 음
 export function playGameOver() {
   tone(440, 0, 0.25, "sawtooth", 0.4);

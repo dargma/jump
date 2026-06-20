@@ -50,7 +50,11 @@ doodle-prince/
 | 공주 만나는 점수 | `config/tuning.js` (`princessHeight`) |
 | 배경음악/효과음 (멜로디·볼륨) | `src/audio.js` |
 | 점프 애니메이션 자세 | `src/draw.js` (`PUSH`/`APEX`/`LAND` 포즈) |
-| 게임오버/다시하기 화면 | `src/scenes/gameover.js` |
+| 하트 개수 / 추락 데미지 기준 | `config/tuning.js` (`maxHealth`, `bigFallDist`) |
+| 떨어질 때 화면 따라가는 범위 | `config/tuning.js` (`cameraTopFrac`, `cameraBotFrac`) |
+| 하늘 배경(구름·새) | `src/scenes/game.js` (`spawnSky`) + `src/draw.js` |
+| 하늘 색 | `src/main.js` (`background`) |
+| 게임오버/승리/다시하기 화면 | `src/scenes/gameover.js` |
 
 ## 새 캐릭터/아이템 추가 가이드
 - **아이템**: `config/items.js` 에 `{ id, name, color, duration, spawnChance, desc }` 추가 →

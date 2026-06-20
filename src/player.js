@@ -12,6 +12,8 @@ export function makePlayer(k, x, y) {
     {
       vy: 0,            // 세로 속도(+면 하강)
       prevY: y,         // 직전 프레임 y (one-way 착지 판정용)
+      lastPlatY: y,     // 마지막으로 밟은 발판 y (추락 거리 계산용)
+      hurtT: 0,         // 아야! 찌그러짐 애니메이션 남은 시간
       w: TUNING.playerWidth,
       h: TUNING.playerHeight,
     },
@@ -36,6 +38,9 @@ export function updatePlayer(k, p, dt) {
   // 양옆은 벽: 화면 밖으로 못 나간다(순간이동 없음).
   const half = p.w / 2;
   p.pos.x = Math.max(half, Math.min(TUNING.width - half, p.pos.x));
+
+  // 아야! 애니메이션 시간 감소
+  if (p.hurtT > 0) p.hurtT -= dt;
 }
 
 // 발판 위에 떨어질 때만 착지 → 자동 점프(one-way: 올라갈 땐 통과).
@@ -52,6 +57,7 @@ export function tryLand(k, p, plat, state) {
 
   if (crossed && inX) {
     p.pos.y = platTop - p.h / 2; // 발판 위에 살짝 얹기
+    p.lastPlatY = plat.pos.y;    // 추락 거리 계산용
     jump(p, state);
   }
 }

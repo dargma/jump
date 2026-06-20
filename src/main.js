@@ -8,7 +8,7 @@ import { registerGameOverScene } from "./scenes/gameover.js";
 const k = kaplay({
   width: TUNING.width,
   height: TUNING.height,
-  background: [225, 238, 255], // 하늘색
+  background: [188, 222, 248], // 옅은 하늘색
   letterbox: true,
   global: false,
   pixelDensity: 2,

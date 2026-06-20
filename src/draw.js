@@ -9,14 +9,32 @@ import { TUNING } from "../config/tuning.js";
 export function drawPlayerComp(k) {
   return {
     draw() {
-      const ink = k.rgb(35, 35, 50);
+      const hurt = (this.hurtT || 0) > 0;
+      const ink = hurt ? k.rgb(220, 70, 70) : k.rgb(35, 35, 50); // 아프면 빨개짐
       const vy = this.vy || 0;
       const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
       const pose = poseFor(n);
 
+      k.pushTransform();
+      if (hurt) k.pushScale(k.vec2(1.35, 0.65)); // 납작 찌그러짐
+
       // 머리 + 몸통
       k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
       k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
+
+      // 머리카락: 떨어질 때(n>0) 위로 솟구치고, 오를 때(n<0) 가라앉는다 + 살랑살랑.
+      const lift = -n * 11;
+      const sway = Math.sin(k.time() * 11) * 1.6;
+      const scalp = [[-5, -19], [-2, -21], [2, -21], [5, -19]];
+      const tip = [[-10, -27], [-3, -32], [3, -32], [10, -27]];
+      for (let i = 0; i < scalp.length; i++) {
+        k.drawLine({
+          p1: k.vec2(scalp[i][0], scalp[i][1]),
+          p2: k.vec2(tip[i][0] + sway, tip[i][1] + lift),
+          width: 2.5,
+          color: ink,
+        });
+      }
 
       // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
       for (const s of [-1, 1]) {
@@ -27,6 +45,8 @@ export function drawPlayerComp(k) {
         k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(s * pose.knee[0], pose.knee[1]), width: 3, color: ink });
         k.drawLine({ p1: k.vec2(s * pose.knee[0], pose.knee[1]), p2: k.vec2(s * pose.foot[0], pose.foot[1]), width: 3, color: ink });
       }
+
+      k.popTransform();
     },
   };
 }
@@ -166,14 +186,26 @@ export function drawCloudComp(k) {
   };
 }
 
-// 새: 'ㅅ' 모양 두 날개가 펄럭인다(시간 기반).
+// 새: 'ㅅ' 모양 두 날개가 펄럭인다(시간 기반). 좌우 대칭이라 방향 상관없다.
 export function drawBirdComp(k) {
   const c = k.rgb(80, 90, 120);
   return {
     draw() {
-      const flap = Math.sin(k.time() * 8) * 3; // 날갯짓
+      const flap = Math.sin(k.time() * 8 + (this.phase || 0)) * 3; // 날갯짓(개체마다 위상)
       k.drawLine({ p1: k.vec2(-8, 0), p2: k.vec2(0, -3 - flap), width: 2, color: c });
       k.drawLine({ p1: k.vec2(0, -3 - flap), p2: k.vec2(8, 0), width: 2, color: c });
+    },
+  };
+}
+
+// 하트(HUD 체력). this.filled 가 false면 빈(회색) 하트.
+export function drawHeartComp(k) {
+  return {
+    draw() {
+      const c = this.filled ? k.rgb(230, 70, 90) : k.rgb(205, 205, 215);
+      k.drawCircle({ pos: k.vec2(-4, -2), radius: 5, color: c });
+      k.drawCircle({ pos: k.vec2(4, -2), radius: 5, color: c });
+      k.drawPolygon({ pts: [k.vec2(-8.5, 0.5), k.vec2(8.5, 0.5), k.vec2(0, 10)], color: c });
     },
   };
 }
