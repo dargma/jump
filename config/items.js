@@ -11,7 +11,7 @@ export const ITEMS = [
     name: "날개",
     type: "timed",
     duration: 5,         // 효과 지속(초)
-    spawnChance: 0.12,   // 발판마다 등장 확률(0~1)
+    spawnChance: 0.2,    // 발판마다 등장 확률(0~1)
     color: [120, 200, 255],
     desc: "일정 시간 점프 높이 2배",
     jumpMultiplier: 2,   // 효과 세기(날개 전용 파라미터)

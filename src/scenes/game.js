@@ -2,7 +2,9 @@
 import { TUNING } from "../../config/tuning.js";
 import { makePlayer, updatePlayer, tryLand } from "../player.js";
 import { initialPlatforms, ensurePlatformsAbove, cleanupBelow } from "../platform.js";
+import { drawPrincessComp } from "../draw.js";
 import { collideItem, applyEffect, tickEffect } from "../item.js";
+import { ensureAudio, startBGM, stopBGM, playItem, playGameOver } from "../audio.js";
 
 const FONT = "kr";
 const BEST_KEY = "doodle-prince-best"; // 최고기록 localStorage 키
@@ -27,6 +29,18 @@ export function registerGameScene(k) {
     const itemLabel = k.add([k.text("", { size: 18, font: FONT }), k.pos(14, 46), k.color(60, 110, 200), k.fixed()]);
     k.add([k.text("최고 " + best, { size: 18, font: FONT }), k.pos(TUNING.width - 14, 16), k.anchor("topright"), k.color(90, 90, 120), k.fixed()]);
 
+    // 첫 입력 때 오디오를 깨우고 배경음악 시작(브라우저 자동재생 정책 때문)
+    let bgmOn = false;
+    const wake = () => {
+      ensureAudio();
+      if (!bgmOn) {
+        startBGM();
+        bgmOn = true;
+      }
+    };
+    k.onKeyPress(wake);
+    k.onMousePress(wake);
+
     k.onUpdate(() => {
       const dt = k.dt();
 
@@ -38,6 +52,7 @@ export function registerGameScene(k) {
       k.get("item").forEach((it) => {
         if (collideItem(player, it)) {
           applyEffect(k, state, player, it.def);
+          playItem();
           k.destroy(it);
         }
       });
@@ -63,16 +78,20 @@ export function registerGameScene(k) {
         ? `${state.activeItem.def.name} ${state.activeItem.timeLeft.toFixed(1)}s`
         : "";
 
-      // 9) 공주 도달(연출은 다음 단계, 지금은 메시지만)
+      // 9) 공주 도달 → 예쁜 공주 등장 + 축하 메시지
       if (!reached && score >= TUNING.princessHeight) {
         reached = true;
-        k.add([k.text("공주를 만났다!", { size: 26, font: FONT }), k.pos(TUNING.width / 2, 70), k.anchor("center"), k.color(220, 90, 160), k.fixed()]);
+        playItem(); // 반짝 효과음
+        k.add([drawPrincessComp(k), k.pos(TUNING.width / 2, 120), k.fixed()]);
+        k.add([k.text("공주를 구했어요!", { size: 24, font: FONT }), k.pos(TUNING.width / 2, 195), k.anchor("center"), k.color(220, 90, 160), k.fixed()]);
       }
 
       // 10) 게임오버(발판 놓치고 화면 아래로 추락)
       const deadLine = camY + TUNING.height / 2 + TUNING.fallMargin;
       if (player.pos.y > deadLine) {
         if (score > best) localStorage.setItem(BEST_KEY, String(score));
+        stopBGM();
+        playGameOver();
         k.go("gameover", { score, best: Math.max(best, score) });
       }
     });

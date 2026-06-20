@@ -23,16 +23,19 @@ export const TUNING = {
   // 발판
   platformWidth: 72,
   platformHeight: 14,
-  platformGapMin: 70,  // 발판 세로 간격 최소(px). 작을수록 쉬움
-  platformGapMax: 115, // 발판 세로 간격 최대(px). 점프 높이 안에 있어야 함(아래 메모 참고)
+  platformGapMin: 55,  // 발판 세로 간격 최소(px). 작을수록 쉬움
+  platformGapMax: 95,  // 발판 세로 간격 최대(px). 점프 높이 안에 있어야 함(아래 메모 참고)
+  platformMaxStepX: 150, // 다음 발판이 이전 발판에서 좌우로 떨어질 수 있는 최대(px).
+  //                       작을수록 발판이 사다리처럼 이어져 올라가기 쉬움
 
-  // 공주(승리 연출 트리거). ★ score(점수) 단위, 임시값.
+  // 공주(승리 연출 트리거). ★ score(점수) 단위.
   // "공주 만나는 점수"를 코드에 하드코딩하지 말고 항상 여기서만 바꾼다.
-  princessHeight: 3000,
+  // 검증결과: 완벽 플레이 기준 3000=약210초, 1000=약70초. 아이 기준 1000으로.
+  princessHeight: 1000,
 
   // 게임오버: 카메라 화면 아래로 이만큼(px) 더 떨어지면 끝
   fallMargin: 120,
 };
 
 // 참고(손맛 안전선): 점프 최고 도달 높이 = jumpVel^2 / (2*gravity).
-// 현재값이면 약 169px. platformGapMax(115)보다 커야 발판에 닿을 수 있다.
+// 현재값이면 약 169px. platformGapMax(95)보다 커야 발판에 닿을 수 있다(여유 충분).

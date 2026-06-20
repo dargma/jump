@@ -21,7 +21,8 @@ doodle-prince/
 │  ├─ player.js      #   졸라맨: 자동 점프, 좌우 이동, 양옆 순환
 │  ├─ platform.js    #   발판 생성 / 무한 절차생성 / 재활용
 │  ├─ item.js        #   아이템 스폰 + 효과 발동 (데이터는 config/items.js)
-│  ├─ draw.js        #   선·도형으로 졸라맨/발판 그리기 (나중에 이미지 교체 지점)
+│  ├─ audio.js       #   배경음악 + 효과음 (Web Audio로 합성, 음원 파일 없이)
+│  ├─ draw.js        #   선·도형으로 졸라맨/발판/공주 그리기 (나중에 이미지 교체 지점)
 │  └─ scenes/
 │     ├─ game.js     #   게임 플레이 씬 (카메라, 점수, 게임오버 판정)
 │     └─ gameover.js #   게임오버 + 다시하기
@@ -43,8 +44,12 @@ doodle-prince/
 | 발판 간격을 넓히고/좁히기 | `config/tuning.js` |
 | **새 아이템 추가** | `config/items.js` 에 데이터 정의 → `src/item.js` 에 효과 로직 |
 | 아이템 효과 지속시간/등장확률 | `config/items.js` |
-| 졸라맨/발판 **모양**을 바꾸기 | `src/draw.js` |
+| 졸라맨/발판/공주 **모양**을 바꾸기 | `src/draw.js` |
 | 그림을 이미지로 교체 | `src/draw.js` (그리는 함수만 교체) + `assets/` |
+| 발판이 닿을락말락(난이도) | `config/tuning.js` (`platformGapMax`, `platformMaxStepX`) |
+| 공주 만나는 점수 | `config/tuning.js` (`princessHeight`) |
+| 배경음악/효과음 (멜로디·볼륨) | `src/audio.js` |
+| 점프 애니메이션 자세 | `src/draw.js` (`PUSH`/`APEX`/`LAND` 포즈) |
 | 게임오버/다시하기 화면 | `src/scenes/gameover.js` |
 
 ## 새 캐릭터/아이템 추가 가이드

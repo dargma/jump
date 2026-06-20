@@ -2,6 +2,7 @@
 // 물리는 tuning.js 숫자로만 굴러간다(매직넘버 없음).
 import { TUNING } from "../config/tuning.js";
 import { drawPlayerComp } from "./draw.js";
+import { playJump } from "./audio.js";
 
 // 졸라맨 생성. pos는 중심 기준(충돌 계산도 중심 기준).
 export function makePlayer(k, x, y) {
@@ -58,4 +59,5 @@ export function tryLand(k, p, plat, state) {
 // 자동 점프: 아이템(날개)이 켜져 있으면 jumpMultiplier만큼 더 높이.
 export function jump(p, state) {
   p.vy = -TUNING.jumpVel * state.jumpMultiplier;
+  playJump();
 }

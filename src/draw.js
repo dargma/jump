@@ -4,22 +4,52 @@
 // draw() 안의 좌표 (0,0) 은 그 게임오브젝트의 pos(중심)다.
 import { TUNING } from "../config/tuning.js";
 
-// 졸라맨: 동그란 머리 + 막대 팔다리
+// 졸라맨: 동그란 머리 + 관절(무릎/팔꿈치) 있는 팔다리.
+// 점프 단계(세로 속도 this.vy)에 따라 자세가 바뀌어 "진짜 뛰는" 느낌을 준다.
 export function drawPlayerComp(k) {
   return {
     draw() {
       const ink = k.rgb(35, 35, 50);
-      // 머리(원, 윤곽선만)
-      k.drawCircle({ pos: k.vec2(0, -13), radius: 7, fill: false, outline: { width: 3, color: ink } });
-      // 몸통
-      k.drawLine({ p1: k.vec2(0, -6), p2: k.vec2(0, 8), width: 3, color: ink });
-      // 팔
-      k.drawLine({ p1: k.vec2(-9, 0), p2: k.vec2(9, 0), width: 3, color: ink });
-      // 다리
-      k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(-7, 18), width: 3, color: ink });
-      k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(7, 18), width: 3, color: ink });
+      const vy = this.vy || 0;
+      const n = Math.max(-1, Math.min(1, vy / 700)); // -1 상승 ~ 0 정점 ~ +1 하강
+      const pose = poseFor(n);
+
+      // 머리 + 몸통
+      k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
+      k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
+
+      // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
+      for (const s of [-1, 1]) {
+        // 팔: 어깨(0,-4) → 팔꿈치 → 손
+        k.drawLine({ p1: k.vec2(0, -4), p2: k.vec2(s * pose.elbow[0], pose.elbow[1]), width: 3, color: ink });
+        k.drawLine({ p1: k.vec2(s * pose.elbow[0], pose.elbow[1]), p2: k.vec2(s * pose.hand[0], pose.hand[1]), width: 3, color: ink });
+        // 다리: 엉덩이(0,8) → 무릎 → 발
+        k.drawLine({ p1: k.vec2(0, 8), p2: k.vec2(s * pose.knee[0], pose.knee[1]), width: 3, color: ink });
+        k.drawLine({ p1: k.vec2(s * pose.knee[0], pose.knee[1]), p2: k.vec2(s * pose.foot[0], pose.foot[1]), width: 3, color: ink });
+      }
     },
   };
+}
+
+// 점프 단계별 포즈 키프레임(왼쪽 기준 오프셋; 오른쪽은 x부호 반전).
+const PUSH = { elbow: [6, -9], hand: [9, -15], knee: [3, 14], foot: [4, 21] };  // 박차고 오름: 팔 위로, 다리 쭉
+const APEX = { elbow: [11, -3], hand: [14, -5], knee: [8, 10], foot: [5, 13] }; // 정점: 팔 벌리고 다리 오무림
+const LAND = { elbow: [8, 3], hand: [10, 8], knee: [6, 15], foot: [9, 22] };    // 착지 준비: 팔 내리고 다리 펼침
+
+// n<0(상승)이면 APEX→PUSH, n>0(하강)이면 APEX→LAND 로 보간.
+function poseFor(n) {
+  return n < 0 ? lerpPose(APEX, PUSH, -n) : lerpPose(APEX, LAND, n);
+}
+
+function lerpN(a, b, t) {
+  return a + (b - a) * t;
+}
+function lerpPose(a, b, t) {
+  const p = {};
+  for (const key of ["elbow", "hand", "knee", "foot"]) {
+    p[key] = [lerpN(a[key][0], b[key][0], t), lerpN(a[key][1], b[key][1], t)];
+  }
+  return p;
 }
 
 // 발판: 타입별 색만 다르게(지금은 normal만). 나중에 moving/breakable도 여기서 분기.
@@ -49,4 +79,76 @@ export function drawItemComp(k, def) {
       k.drawLine({ p1: k.vec2(10, -2), p2: k.vec2(16, -7), width: 2, color });
     },
   };
+}
+
+// 공주: 졸라맨이 아니라 긴 머리 + 왕관 + 드레스의 귀여운 캐릭터.
+// 둥실둥실 + 머리카락 살랑 + 반짝이 애니메이션(시간 기반).
+export function drawPrincessComp(k) {
+  return {
+    draw() {
+      const tt = k.time();
+      const bob = Math.sin(tt * 2) * 3;    // 위아래 둥실
+      const sway = Math.sin(tt * 1.6) * 2; // 머리카락 살랑
+
+      const hair = k.rgb(54, 42, 66);
+      const skin = k.rgb(255, 226, 200);
+      const dress = k.rgb(246, 138, 190);
+      const dress2 = k.rgb(232, 110, 170);
+      const gold = k.rgb(255, 206, 84);
+      const cheek = k.rgb(255, 150, 170);
+      const ink = k.rgb(60, 45, 60);
+      const white = k.rgb(255, 255, 255);
+
+      k.pushTransform();
+      k.pushTranslate(k.vec2(0, bob));
+
+      // 긴 머리(뒤 블롭 + 좌우로 흘러내리는 머리카락)
+      k.drawCircle({ pos: k.vec2(0, -13), radius: 16, color: hair });
+      k.drawPolygon({ pts: [k.vec2(-15, -14), k.vec2(-22 + sway, 10), k.vec2(-15, 40), k.vec2(-7, 38)], color: hair });
+      k.drawPolygon({ pts: [k.vec2(15, -14), k.vec2(22 + sway, 10), k.vec2(15, 40), k.vec2(7, 38)], color: hair });
+
+      // 드레스(어깨→아래로 넓어지는 사다리꼴) + 밑단
+      k.drawPolygon({ pts: [k.vec2(-9, 2), k.vec2(9, 2), k.vec2(24, 42), k.vec2(-24, 42)], color: dress });
+      k.drawPolygon({ pts: [k.vec2(-24, 42), k.vec2(24, 42), k.vec2(20, 36), k.vec2(-20, 36)], color: dress2 });
+
+      // 팔
+      k.drawLine({ p1: k.vec2(-8, 4), p2: k.vec2(-16, 16), width: 4, color: skin });
+      k.drawLine({ p1: k.vec2(8, 4), p2: k.vec2(16, 16), width: 4, color: skin });
+
+      // 얼굴 + 앞머리(이마 위 돔)
+      k.drawCircle({ pos: k.vec2(0, -12), radius: 13, color: skin });
+      k.drawPolygon({ pts: [k.vec2(-14, -10), k.vec2(-12, -22), k.vec2(0, -25), k.vec2(12, -22), k.vec2(14, -10)], color: hair });
+
+      // 볼터치 / 큰 눈 / 미소
+      k.drawCircle({ pos: k.vec2(-7, -9), radius: 2.4, color: cheek, opacity: 0.8 });
+      k.drawCircle({ pos: k.vec2(7, -9), radius: 2.4, color: cheek, opacity: 0.8 });
+      k.drawCircle({ pos: k.vec2(-5, -13), radius: 2.6, color: ink });
+      k.drawCircle({ pos: k.vec2(5, -13), radius: 2.6, color: ink });
+      k.drawCircle({ pos: k.vec2(-4.2, -13.8), radius: 0.9, color: white });
+      k.drawCircle({ pos: k.vec2(5.8, -13.8), radius: 0.9, color: white });
+      k.drawLine({ p1: k.vec2(-3, -7), p2: k.vec2(0, -5), width: 1.6, color: ink });
+      k.drawLine({ p1: k.vec2(0, -5), p2: k.vec2(3, -7), width: 1.6, color: ink });
+
+      // 왕관(받침 + 뾰족 3개 + 보석)
+      k.drawRect({ width: 18, height: 5, pos: k.vec2(0, -23), anchor: "center", color: gold });
+      for (const sx of [-6, 0, 6]) {
+        k.drawPolygon({ pts: [k.vec2(sx - 3, -25), k.vec2(sx, -31), k.vec2(sx + 3, -25)], color: gold });
+      }
+      k.drawCircle({ pos: k.vec2(0, -31), radius: 1.4, color: k.rgb(255, 120, 170) });
+
+      k.popTransform();
+
+      // 반짝이(주변에서 깜빡)
+      const tw = (ph) => 2 + Math.abs(Math.sin(tt * 3 + ph)) * 3;
+      sparkle(k, -28, -20, tw(0), gold);
+      sparkle(k, 30, -6, tw(1.5), gold);
+      sparkle(k, 22, 26, tw(2.7), gold);
+    },
+  };
+}
+
+// 4방향 반짝이 한 개
+function sparkle(k, x, y, s, color) {
+  k.drawLine({ p1: k.vec2(x, y - s), p2: k.vec2(x, y + s), width: 2, color });
+  k.drawLine({ p1: k.vec2(x - s, y), p2: k.vec2(x + s, y), width: 2, color });
 }

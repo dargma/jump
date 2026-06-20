@@ -21,13 +21,17 @@ export function makePlatform(k, x, y, type = PLATFORM_TYPES.normal) {
   ]);
 }
 
+// 다음 발판 X는 이전 발판 근처에서만 생성 → 사다리처럼 이어져 올라가기 쉽다.
+let lastX = TUNING.width / 2;
+
 // 게임 시작 시 발판 여러 개 깔기. 반환: 가장 높이(작은 y) 생성된 발판 y
 export function initialPlatforms(k) {
-  makePlatform(k, TUNING.width / 2, 60); // 시작 발판(졸라맨 바로 아래)
+  lastX = TUNING.width / 2;            // 다시하기마다 초기화
+  makePlatform(k, lastX, 60);          // 시작 발판(졸라맨 바로 아래)
   let y = 60;
   for (let i = 0; i < 12; i++) {
     y -= randGap(k);
-    const x = randX(k);
+    const x = nextX(k);
     makePlatform(k, x, y);
     maybeSpawnItem(k, x, y);
   }
@@ -39,7 +43,7 @@ export function ensurePlatformsAbove(k, topY, camY) {
   const ceiling = camY - TUNING.height; // 화면 위 한 칸 더 미리 만들어 둠
   while (topY > ceiling) {
     topY -= randGap(k);
-    const x = randX(k);
+    const x = nextX(k);
     makePlatform(k, x, topY);
     maybeSpawnItem(k, x, topY);
   }
@@ -58,6 +62,13 @@ export function cleanupBelow(k, camY) {
 function randGap(k) {
   return k.rand(TUNING.platformGapMin, TUNING.platformGapMax);
 }
-function randX(k) {
-  return k.rand(TUNING.platformWidth / 2, TUNING.width - TUNING.platformWidth / 2);
+
+// 이전 발판 X에서 platformMaxStepX 안쪽으로만 다음 X를 정한다(닿을 수 있게).
+function nextX(k) {
+  const half = TUNING.platformWidth / 2;
+  const step = TUNING.platformMaxStepX;
+  let x = lastX + k.rand(-step, step);
+  x = Math.max(half, Math.min(TUNING.width - half, x)); // 화면 안으로 제한
+  lastX = x;
+  return x;
 }
