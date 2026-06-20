@@ -303,59 +303,78 @@ export function drawPrincessComp(k) {
       const bob = Math.sin(tt * 2) * 3;    // 위아래 둥실
       const sway = Math.sin(tt * 1.6) * 2; // 머리카락 살랑
 
-      const hair = k.rgb(54, 42, 66);
+      const hair = k.rgb(124, 80, 46);     // 밝은 갈색
+      const hairHi = k.rgb(168, 116, 70);  // 머릿결 하이라이트
       const skin = k.rgb(255, 226, 200);
-      const dress = k.rgb(246, 138, 190);
-      const dress2 = k.rgb(232, 110, 170);
-      const gold = k.rgb(255, 206, 84);
+      const dress = k.rgb(250, 150, 196);
+      const dress2 = k.rgb(234, 114, 172); // 드레스 진한색(주름/밑단)
+      const sashC = k.rgb(255, 244, 250);
+      const gold = k.rgb(255, 212, 92);
+      const gemP = k.rgb(255, 110, 160);
+      const gemB = k.rgb(120, 190, 255);
       const cheek = k.rgb(255, 150, 170);
-      const ink = k.rgb(60, 45, 60);
+      const eyeC = k.rgb(112, 72, 122);    // 보라빛 눈동자
+      const ink = k.rgb(70, 50, 64);
       const white = k.rgb(255, 255, 255);
 
       k.pushTransform();
       k.pushTranslate(k.vec2(0, bob));
 
-      // 긴 머리(뒤 블롭 + 좌우로 흘러내리는 머리카락)
-      k.drawCircle({ pos: k.vec2(0, -13), radius: 16, color: hair });
-      k.drawPolygon({ pts: [k.vec2(-15, -14), k.vec2(-22 + sway, 10), k.vec2(-15, 40), k.vec2(-7, 38)], color: hair });
-      k.drawPolygon({ pts: [k.vec2(15, -14), k.vec2(22 + sway, 10), k.vec2(15, 40), k.vec2(7, 38)], color: hair });
+      // ── 긴 웨이브 머리(뒤) ──
+      k.drawCircle({ pos: k.vec2(0, -13), radius: 17, color: hair });
+      k.drawPolygon({ pts: [k.vec2(-16, -12), k.vec2(-25 + sway, 12), k.vec2(-14, 44), k.vec2(-6, 40)], color: hair });
+      k.drawPolygon({ pts: [k.vec2(16, -12), k.vec2(25 + sway, 12), k.vec2(14, 44), k.vec2(6, 40)], color: hair });
+      k.drawLine({ p1: k.vec2(-14, -8), p2: k.vec2(-17, 20), width: 1.5, color: hairHi });
+      k.drawLine({ p1: k.vec2(14, -8), p2: k.vec2(17, 20), width: 1.5, color: hairHi });
 
-      // 드레스(어깨→아래로 넓어지는 사다리꼴) + 밑단
-      k.drawPolygon({ pts: [k.vec2(-9, 2), k.vec2(9, 2), k.vec2(24, 42), k.vec2(-24, 42)], color: dress });
-      k.drawPolygon({ pts: [k.vec2(-24, 42), k.vec2(24, 42), k.vec2(20, 36), k.vec2(-20, 36)], color: dress2 });
+      // ── 드레스: 벨 스커트 + 보디스 + 퍼프 소매 + 새시 + 스캘럽 밑단 ──
+      k.drawPolygon({ pts: [k.vec2(-8, 6), k.vec2(8, 6), k.vec2(26, 46), k.vec2(-26, 46)], color: dress });
+      k.drawPolygon({ pts: [k.vec2(-26, 46), k.vec2(26, 46), k.vec2(22, 40), k.vec2(-22, 40)], color: dress2 });
+      for (const sxv of [-20, -12, -4, 4, 12, 20]) k.drawCircle({ pos: k.vec2(sxv, 46), radius: 4, color: dress2 });
+      k.drawPolygon({ pts: [k.vec2(-7, -3), k.vec2(7, -3), k.vec2(8, 8), k.vec2(-8, 8)], color: dress2 });
+      k.drawRect({ width: 18, height: 4, pos: k.vec2(0, 7), anchor: "center", color: sashC });
+      k.drawCircle({ pos: k.vec2(-9, 0), radius: 4.5, color: dress });
+      k.drawCircle({ pos: k.vec2(9, 0), radius: 4.5, color: dress });
 
-      // 팔
-      k.drawLine({ p1: k.vec2(-8, 4), p2: k.vec2(-16, 16), width: 4, color: skin });
-      k.drawLine({ p1: k.vec2(8, 4), p2: k.vec2(16, 16), width: 4, color: skin });
+      // 팔 + 손
+      k.drawLine({ p1: k.vec2(-9, 2), p2: k.vec2(-15, 14), width: 3.5, color: skin });
+      k.drawLine({ p1: k.vec2(9, 2), p2: k.vec2(15, 14), width: 3.5, color: skin });
+      k.drawCircle({ pos: k.vec2(-15, 15), radius: 2, color: skin });
+      k.drawCircle({ pos: k.vec2(15, 15), radius: 2, color: skin });
 
-      // 얼굴 + 앞머리(이마 위 돔)
+      // ── 얼굴 ──
       k.drawCircle({ pos: k.vec2(0, -12), radius: 13, color: skin });
-      k.drawPolygon({ pts: [k.vec2(-14, -10), k.vec2(-12, -22), k.vec2(0, -25), k.vec2(12, -22), k.vec2(14, -10)], color: hair });
-
-      // 볼터치 / 큰 눈 / 미소
-      k.drawCircle({ pos: k.vec2(-7, -9), radius: 2.4, color: cheek, opacity: 0.8 });
-      k.drawCircle({ pos: k.vec2(7, -9), radius: 2.4, color: cheek, opacity: 0.8 });
-      k.drawCircle({ pos: k.vec2(-5, -13), radius: 2.6, color: ink });
-      k.drawCircle({ pos: k.vec2(5, -13), radius: 2.6, color: ink });
-      k.drawCircle({ pos: k.vec2(-4.2, -13.8), radius: 0.9, color: white });
-      k.drawCircle({ pos: k.vec2(5.8, -13.8), radius: 0.9, color: white });
-      k.drawLine({ p1: k.vec2(-3, -7), p2: k.vec2(0, -5), width: 1.6, color: ink });
-      k.drawLine({ p1: k.vec2(0, -5), p2: k.vec2(3, -7), width: 1.6, color: ink });
-
-      // 왕관(받침 + 뾰족 3개 + 보석)
-      k.drawRect({ width: 18, height: 5, pos: k.vec2(0, -23), anchor: "center", color: gold });
-      for (const sx of [-6, 0, 6]) {
-        k.drawPolygon({ pts: [k.vec2(sx - 3, -25), k.vec2(sx, -31), k.vec2(sx + 3, -25)], color: gold });
+      k.drawPolygon({ pts: [k.vec2(-14, -9), k.vec2(-11, -22), k.vec2(0, -25), k.vec2(11, -22), k.vec2(14, -9)], color: hair });
+      k.drawCircle({ pos: k.vec2(-7, -8), radius: 2.6, color: cheek, opacity: 0.85 });
+      k.drawCircle({ pos: k.vec2(7, -8), radius: 2.6, color: cheek, opacity: 0.85 });
+      // 큰 반짝 눈 + 속눈썹
+      for (const ex of [-5, 5]) {
+        const s = Math.sign(ex);
+        k.drawCircle({ pos: k.vec2(ex, -12), radius: 3.4, color: white });
+        k.drawCircle({ pos: k.vec2(ex, -11.5), radius: 2.6, color: eyeC });
+        k.drawCircle({ pos: k.vec2(ex, -11), radius: 1.2, color: ink });
+        k.drawCircle({ pos: k.vec2(ex - 1, -13), radius: 1, color: white });
+        k.drawLine({ p1: k.vec2(ex + s * 3, -14.6), p2: k.vec2(ex + s * 5.2, -15.6), width: 1.2, color: ink });
       }
-      k.drawCircle({ pos: k.vec2(0, -31), radius: 1.4, color: k.rgb(255, 120, 170) });
+      // 코 + 입(미소)
+      k.drawLine({ p1: k.vec2(-2.4, -5), p2: k.vec2(0, -3.6), width: 1.5, color: k.rgb(220, 120, 130) });
+      k.drawLine({ p1: k.vec2(0, -3.6), p2: k.vec2(2.4, -5), width: 1.5, color: k.rgb(220, 120, 130) });
+
+      // ── 티아라(곡선 + 보석) ──
+      k.drawLine({ p1: k.vec2(-9, -20), p2: k.vec2(0, -25), width: 2.5, color: gold });
+      k.drawLine({ p1: k.vec2(0, -25), p2: k.vec2(9, -20), width: 2.5, color: gold });
+      k.drawCircle({ pos: k.vec2(0, -26), radius: 2.2, color: gemP });
+      k.drawCircle({ pos: k.vec2(-7, -21), radius: 1.6, color: gemB });
+      k.drawCircle({ pos: k.vec2(7, -21), radius: 1.6, color: gemB });
 
       k.popTransform();
 
       // 반짝이(주변에서 깜빡)
-      const tw = (ph) => 2 + Math.abs(Math.sin(tt * 3 + ph)) * 3;
-      sparkle(k, -28, -20, tw(0), gold);
-      sparkle(k, 30, -6, tw(1.5), gold);
-      sparkle(k, 22, 26, tw(2.7), gold);
+      const tw = (ph) => 2 + Math.abs(Math.sin(tt * 3 + ph)) * 3.5;
+      sparkle(k, -30, -22, tw(0), gold);
+      sparkle(k, 31, -8, tw(1.5), white);
+      sparkle(k, 26, 28, tw(2.7), gold);
+      sparkle(k, -27, 18, tw(3.8), white);
     },
   };
 }
