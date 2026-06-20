@@ -12,8 +12,9 @@ const GOAL_HALF = 80; // 공주 받침대 절반 폭
 
 export function registerGameScene(k) {
   k.scene("game", () => {
-    const state = { jumpMultiplier: 1, activeItem: null, inventory: [] };
+    const state = { jumpMultiplier: 1, activeItem: null, inventory: [], rocketSpeed: 0 };
 
+    const sky = makeSky(k); // 높이에 따라 낮→노을→밤→우주로 변하는 배경
     spawnSky(k);
 
     const player = makePlayer(k, TUNING.width / 2, 0);
@@ -28,6 +29,7 @@ export function registerGameScene(k) {
     let score = 0;
     let coinBonus = 0;
     let health = TUNING.maxHealth;
+    let lastMile = 0; // 칭찬 배너용(200점 단위)
 
     const best = Number(localStorage.getItem(BEST_KEY) || 0);
 
@@ -100,14 +102,27 @@ export function registerGameScene(k) {
           coinBonus += TUNING.coinValue;
           playItem();
           burstStars(k, c.pos.x, c.pos.y);
+          floatScore(k, c.pos.x, c.pos.y, "+" + TUNING.coinValue);
           k.destroy(c);
         }
       });
       tickEffect(state, dt);
 
+      // 로켓: 효과 중엔 위로 슈웅(중력 무시) + 발밑 불꽃
+      player.rocketOn = state.rocketSpeed > 0;
+      if (player.rocketOn) player.vy = -state.rocketSpeed;
+
       // 5) 점수(올라간 높이 + 코인 보너스)
       highestY = Math.min(highestY, player.pos.y);
       score = Math.floor(-highestY / TUNING.pxPerScore) + coinBonus;
+
+      // 배경(하늘 테마) 갱신 + 200점마다 칭찬
+      updateSky(k, sky, score);
+      const mile = Math.floor(score / 200);
+      if (score > 0 && mile > lastMile) {
+        lastMile = mile;
+        celebrate(k, mile * 200);
+      }
 
       // 6) 카메라(데드존 + 하드 클램프: 빠르게 떨어져도 졸라맨이 화면 밖으로 못 나감)
       camY = k.lerp(camY, deadzoneCam(player.pos.y, camY), TUNING.cameraFollow);
@@ -221,6 +236,78 @@ function floatText(k, x, y) {
     t.life -= d;
     t.pos.y -= 40 * d;
     t.opacity = Math.max(0, t.life / 0.8);
+    if (t.life <= 0) k.destroy(t);
+  });
+}
+
+// 높이에 따라 변하는 하늘 배경 + 별(밤/우주에서 보임)
+function makeSky(k) {
+  const bg = k.add([k.rect(TUNING.width, TUNING.height), k.pos(0, 0), k.fixed(), k.z(-100), k.color(188, 222, 248)]);
+  const stars = [];
+  for (let i = 0; i < 22; i++) {
+    stars.push(k.add([
+      k.circle(k.rand(1, 2)), k.pos(k.rand(0, TUNING.width), k.rand(0, TUNING.height * 0.75)),
+      k.color(255, 255, 255), k.opacity(0), k.fixed(), k.z(-99), { ph: k.rand(0, 6) },
+    ]));
+  }
+  return { bg, stars };
+}
+
+function updateSky(k, sky, score) {
+  sky.bg.color = skyColor(k, score);
+  const dark = Math.max(0, Math.min(1, (score - 350) / 300));
+  for (const s of sky.stars) {
+    s.opacity = dark * (0.4 + 0.6 * Math.abs(Math.sin(k.time() * 2 + s.ph)));
+  }
+}
+
+const SKY_STOPS = [
+  { at: 0, c: [188, 222, 248] },   // 낮
+  { at: 300, c: [255, 186, 140] }, // 노을
+  { at: 600, c: [46, 54, 98] },    // 밤
+  { at: 900, c: [12, 14, 32] },    // 우주
+];
+function skyColor(k, score) {
+  let a = SKY_STOPS[0], b = SKY_STOPS[0];
+  for (let i = 0; i < SKY_STOPS.length - 1; i++) {
+    if (score >= SKY_STOPS[i].at) { a = SKY_STOPS[i]; b = SKY_STOPS[i + 1]; }
+  }
+  if (score >= SKY_STOPS[SKY_STOPS.length - 1].at) a = b = SKY_STOPS[SKY_STOPS.length - 1];
+  const span = b.at - a.at;
+  const t = span <= 0 ? 0 : Math.max(0, Math.min(1, (score - a.at) / span));
+  return k.rgb(lerpN(a.c[0], b.c[0], t), lerpN(a.c[1], b.c[1], t), lerpN(a.c[2], b.c[2], t));
+}
+function lerpN(a, b, t) { return a + (b - a) * t; }
+
+// 코인 점수 팝업 "+25"
+function floatScore(k, x, y, text) {
+  const t = k.add([
+    k.text(text, { size: 18, font: FONT }), k.pos(x, y - 10), k.anchor("center"),
+    k.color(255, 190, 40), k.opacity(1), { life: 0.7 },
+  ]);
+  t.onUpdate(() => {
+    const d = k.dt();
+    t.life -= d;
+    t.pos.y -= 45 * d;
+    t.opacity = Math.max(0, t.life / 0.7);
+    if (t.life <= 0) k.destroy(t);
+  });
+}
+
+// 200점마다 칭찬 배너
+function celebrate(k, mileScore) {
+  playItem();
+  const msgs = ["잘했어!", "멋져!", "최고야!", "계속 가자!"];
+  const msg = msgs[(Math.floor(mileScore / 200) - 1) % msgs.length];
+  const t = k.add([
+    k.text(`${mileScore}  ${msg}`, { size: 26, font: FONT }), k.pos(TUNING.width / 2, 130),
+    k.anchor("center"), k.color(255, 110, 170), k.opacity(1), k.fixed(), { life: 1.3 },
+  ]);
+  t.onUpdate(() => {
+    const d = k.dt();
+    t.life -= d;
+    t.pos.y -= 14 * d;
+    t.opacity = Math.max(0, t.life / 1.3);
     if (t.life <= 0) k.destroy(t);
   });
 }

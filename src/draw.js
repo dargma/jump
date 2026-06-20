@@ -18,6 +18,13 @@ export function drawPlayerComp(k) {
       k.pushTransform();
       if (hurt) k.pushScale(k.vec2(1.35, 0.65)); // 납작 찌그러짐
 
+      // 로켓 불꽃(발밑에서 펄럭)
+      if (this.rocketOn) {
+        const f = 6 + Math.abs(Math.sin(k.time() * 30)) * 8;
+        k.drawPolygon({ pts: [k.vec2(-6, 18), k.vec2(6, 18), k.vec2(0, 18 + f)], color: k.rgb(255, 150, 40) });
+        k.drawPolygon({ pts: [k.vec2(-3, 18), k.vec2(3, 18), k.vec2(0, 18 + f * 0.6)], color: k.rgb(255, 230, 90) });
+      }
+
       // 머리 + 몸통
       k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
       k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });

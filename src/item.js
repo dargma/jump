@@ -52,7 +52,8 @@ export function applyEffect(k, state, player, def) {
 // --- timed(지속형) ---
 function startTimed(state, def) {
   state.activeItem = { def, timeLeft: def.duration };
-  if (def.id === "wing") state.jumpMultiplier = def.jumpMultiplier; // 날개: 점프 2배
+  if (def.id === "wing") state.jumpMultiplier = def.jumpMultiplier; // 날개: 점프 더 높이
+  if (def.id === "rocket") state.rocketSpeed = def.climbSpeed;      // 로켓: 위로 슈웅
   // booster: 점프 빈도 증가 (다음 단계)
 }
 
@@ -62,6 +63,7 @@ export function tickEffect(state, dt) {
   state.activeItem.timeLeft -= dt;
   if (state.activeItem.timeLeft <= 0) {
     state.jumpMultiplier = 1; // 효과 해제(원래대로)
+    state.rocketSpeed = 0;
     state.activeItem = null;
   }
 }

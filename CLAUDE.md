@@ -58,7 +58,9 @@ doodle-prince/
 | 하트 개수 / 추락 데미지 기준 | `config/tuning.js` (`maxHealth`, `bigFallDist`) |
 | 떨어질 때 화면 따라가는 범위 | `config/tuning.js` (`cameraTopFrac`, `cameraBotFrac`) |
 | 하늘 배경(구름·새) | `src/scenes/game.js` (`spawnSky`) + `src/draw.js` |
-| 하늘 색 | `src/main.js` (`background`) |
+| 하늘 테마(낮/노을/밤/우주) | `src/scenes/game.js` (`SKY_STOPS`) |
+| 칭찬 배너 간격 / 코인 팝업 | `src/scenes/game.js` (`celebrate`, `floatScore`) |
+| 시작 하늘 색 | `src/main.js` (`background`) |
 | 게임오버/승리/다시하기 화면 | `src/scenes/gameover.js` |
 
 ## 새 캐릭터/아이템 추가 가이드
