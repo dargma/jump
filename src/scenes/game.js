@@ -4,7 +4,7 @@ import { STAGES, STORY } from "../../config/stages.js";
 import { ITEMS } from "../../config/items.js";
 import { CHARACTERS, selected } from "../../config/characters.js";
 import { makePlayer, updatePlayer, tryLand } from "../player.js";
-import { initialPlatforms, ensurePlatformsAbove, cleanupBelow, makePlatform } from "../platform.js";
+import { initialPlatforms, ensurePlatformsAbove, cleanupBelow } from "../platform.js";
 import { drawPrincessComp, drawCloudComp, drawBirdComp, drawHeartComp } from "../draw.js";
 import { collideItem, applyEffect, tickEffect } from "../item.js";
 import { FACTS } from "../../config/facts.js";
@@ -16,7 +16,7 @@ const GOAL_HALF = 80;
 
 export function registerGameScene(k) {
   k.scene("game", () => {
-    const state = { jumpMultiplier: 1, activeItem: null, inventory: [], rocketSpeed: 0 };
+    const state = { jumpMultiplier: 1, activeItem: null, inventory: [], rocketSpeed: 0, parachuteFall: 0 };
 
     const sky = makeSky(k);
     spawnSky(k);
@@ -112,13 +112,11 @@ export function registerGameScene(k) {
       const fromPlatY = player.lastPlatY;
       k.get("platform").forEach((p) => tryLand(k, player, p, state));
       if (wasFalling && player.vy < 0) {
-        if (player.lastPlatY - fromPlatY > TUNING.bigFallDist) bigFall();
+        if (state.parachuteFall <= 0 && player.lastPlatY - fromPlatY > TUNING.bigFallDist) bigFall();
         dustPuff(k, player.pos.x, player.pos.y + player.h / 2);
         if (player.vy < -TUNING.jumpVel * 1.3 && k.shake) k.shake(3); // 트램펄린/날개 큰 점프 타격감
       }
 
-      // 3) 항상 받침 보장
-      ensureCatch(k, player);
 
       // 4) 아이템(가방) + 코인(점수)
       k.get("item").forEach((it) => {
@@ -152,6 +150,10 @@ export function registerGameScene(k) {
       // 로켓: 위로 슈웅 + 발밑 불꽃
       player.rocketOn = state.rocketSpeed > 0;
       if (player.rocketOn) player.vy = -state.rocketSpeed;
+
+      // 낙하산: 펴는 동안 하강 속도 제한(천천히 사뿐히 → 큰 추락 데미지도 방지)
+      player.parachuteOn = state.parachuteFall > 0;
+      if (player.parachuteOn && player.vy > state.parachuteFall) player.vy = state.parachuteFall;
 
       // 5) 점수
       highestY = Math.min(highestY, player.pos.y);
@@ -189,6 +191,17 @@ export function registerGameScene(k) {
         if (topY <= goalY + TUNING.platformGapMax + 1) { spawnGoal(k, goalY); goalSpawned = true; }
       }
       cleanupBelow(k, camY);
+
+      // 9-2) 모든 발판을 놓치고 한참 아래로 떨어지면 게임오버(발판은 새로 안 생긴다)
+      let lowestY = -Infinity;
+      for (const p of k.get("platform")) if (p.pos.y > lowestY) lowestY = p.pos.y;
+      if (lowestY > -Infinity && player.pos.y > lowestY + 70) {
+        stopBGM();
+        playGameOver();
+        if (score > best) localStorage.setItem(BEST_KEY, String(score));
+        k.go("gameover", { score, best: Math.max(best, score), win: false });
+        return;
+      }
 
       // 10) HUD (밤에도 잘 보이게 색을 밝힘)
       const hud = hudColor(k, dark);
@@ -228,17 +241,6 @@ function clampCam(playerY, camY) {
   const minCam = playerY + h / 2 - h * TUNING.cameraBotFrac;
   const maxCam = playerY + h / 2 - h * TUNING.cameraTopFrac;
   return Math.max(minCam, Math.min(maxCam, camY));
-}
-
-// 모든 발판 아래로 떨어지면 졸라맨 바로 아래 받침을 깔아 항상 걸리게 한다.
-function ensureCatch(k, player) {
-  if (player.vy <= 0) return;
-  let lowest = -Infinity;
-  for (const p of k.get("platform")) if (p.pos.y > lowest) lowest = p.pos.y;
-  if (player.pos.y > lowest + 30) {
-    const x = Math.max(TUNING.platformWidth / 2, Math.min(TUNING.width - TUNING.platformWidth / 2, player.pos.x));
-    makePlatform(k, x, player.pos.y + 90);
-  }
 }
 
 // 스테이지 보상을 가방에 넣기

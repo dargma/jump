@@ -35,4 +35,14 @@ export const ITEMS = [
     desc: "잠깐 로켓처럼 위로 슈웅 날아오른다",
     climbSpeed: 920,     // 로켓 상승 속도(px/s)
   },
+  {
+    id: "parachute",
+    name: "낙하산",
+    type: "timed",
+    duration: 6,         // 펼쳐져 있는 시간(초)
+    spawnChance: 0.06,   // 가끔 등장
+    color: [90, 200, 200],
+    desc: "잠깐 천천히 사뿐히 내려온다(안 다침)",
+    fallSpeed: 110,      // 낙하산 펼친 동안 최대 하강 속도(px/s). 작을수록 더 천천히
+  },
 ];

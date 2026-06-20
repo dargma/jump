@@ -66,6 +66,7 @@ function startTimed(state, def) {
   state.activeItem = { def, timeLeft: def.duration };
   if (def.id === "wing") state.jumpMultiplier = def.jumpMultiplier; // 날개: 점프 더 높이
   if (def.id === "rocket") state.rocketSpeed = def.climbSpeed;      // 로켓: 위로 슈웅
+  if (def.id === "parachute") state.parachuteFall = def.fallSpeed;  // 낙하산: 천천히 하강
 }
 
 // 매 프레임 효과 시간 감소, 끝나면 효과 OFF.
@@ -75,6 +76,7 @@ export function tickEffect(state, dt) {
   if (state.activeItem.timeLeft <= 0) {
     state.jumpMultiplier = 1; // 효과 해제(원래대로)
     state.rocketSpeed = 0;
+    state.parachuteFall = 0;
     state.activeItem = null;
   }
 }

@@ -40,6 +40,16 @@ export function drawPlayerComp(k) {
         k.drawPolygon({ pts: [k.vec2(-3, 18), k.vec2(3, 18), k.vec2(0, 18 + f * 0.6)], color: k.rgb(255, 230, 90) });
       }
 
+      // 낙하산 캐노피(펴는 중 + 떨어질 때 머리 위에)
+      if (this.parachuteOn && vy > 0) {
+        const cy = -34;
+        const sw = Math.sin(k.time() * 4) * 1.5; // 살랑
+        k.drawPolygon({ pts: [k.vec2(-18 + sw, cy), k.vec2(-11, cy - 9), k.vec2(0, cy - 12), k.vec2(11, cy - 9), k.vec2(18 + sw, cy)], color: k.rgb(90, 200, 200) });
+        k.drawLine({ p1: k.vec2(-18 + sw, cy), p2: k.vec2(-5, -20), width: 1.4, color: ink });
+        k.drawLine({ p1: k.vec2(0, cy - 1), p2: k.vec2(0, -20), width: 1.4, color: ink });
+        k.drawLine({ p1: k.vec2(18 + sw, cy), p2: k.vec2(5, -20), width: 1.4, color: ink });
+      }
+
       if (this.style === "taekwon") {
         drawTaekwon(k, this, ink, n); // 도복 + 발차기
       } else {
