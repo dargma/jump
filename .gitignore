@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+# 토큰/비밀은 절대 커밋하지 않는다
+.env
+*.token
+secrets*
