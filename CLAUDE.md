@@ -27,8 +27,9 @@ doodle-prince/
 │     ├─ game.js     #   게임 플레이 씬 (카메라, 점수, 게임오버 판정)
 │     └─ gameover.js #   게임오버 + 다시하기
 ├─ config/
-│  ├─ tuning.js      # ★ game feel 숫자 (중력/점프/이동/카메라/발판 간격)
-│  └─ items.js       # ★ 아이템 정의 (데이터)
+│  ├─ tuning.js      # ★ game feel 숫자 (중력/점프/이동/카메라/발판/난이도/코인)
+│  ├─ items.js       # ★ 아이템 정의 (데이터)
+│  └─ platforms.js   # ★ 발판 종류 정의 (일반/트램펄린/구름/움직이는)
 ├─ assets/           # 나중에 이미지/사운드
 ├─ GDD.md            # 게임 디자인 문서
 └─ CLAUDE.md         # 이 파일
@@ -44,6 +45,10 @@ doodle-prince/
 | 발판 간격을 넓히고/좁히기 | `config/tuning.js` |
 | **새 아이템 추가** | `config/items.js` 에 데이터 정의 → `src/item.js` 에 효과 로직 |
 | 아이템 효과 지속시간/등장확률 | `config/items.js` |
+| **새 발판 종류 추가** | `config/platforms.js` 에 데이터 추가 → `src/draw.js`(모양)·`src/player.js`(특성) |
+| 발판 종류 등장 빈도/점프세기 | `config/platforms.js` (`weight`, `jumpMul`) |
+| 초반 난이도/난이도 증가 속도 | `config/tuning.js` (`gapStartMax`, `rampDist`) |
+| 코인 확률/점수 | `config/tuning.js` (`coinChance`, `coinValue`) |
 | 졸라맨/발판/공주 **모양**을 바꾸기 | `src/draw.js` |
 | 그림을 이미지로 교체 | `src/draw.js` (그리는 함수만 교체) + `assets/` |
 | 발판이 닿을락말락(난이도) | `config/tuning.js` (`platformGapMax`, `platformMaxStepX`) |

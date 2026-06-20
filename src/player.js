@@ -58,12 +58,13 @@ export function tryLand(k, p, plat, state) {
   if (crossed && inX) {
     p.pos.y = platTop - p.h / 2; // 발판 위에 살짝 얹기
     p.lastPlatY = plat.pos.y;    // 추락 거리 계산용
-    jump(p, state);
+    jump(p, state, plat.jumpMul || 1);
+    if (plat.breakable) k.destroy(plat); // 구름: 한 번 밟으면 사라짐
   }
 }
 
-// 자동 점프: 아이템(날개)이 켜져 있으면 jumpMultiplier만큼 더 높이.
-export function jump(p, state) {
-  p.vy = -TUNING.jumpVel * state.jumpMultiplier;
+// 자동 점프: 아이템(날개)·발판 종류(트램펄린 등)에 따라 더 높이 뛴다.
+export function jump(p, state, platMul = 1) {
+  p.vy = -TUNING.jumpVel * state.jumpMultiplier * platMul;
   playJump();
 }

@@ -22,19 +22,8 @@ export function drawPlayerComp(k) {
       k.drawCircle({ pos: k.vec2(0, -14), radius: 7, fill: false, outline: { width: 3, color: ink } });
       k.drawLine({ p1: k.vec2(0, -7), p2: k.vec2(0, 8), width: 3, color: ink });
 
-      // 머리카락: 떨어질 때(n>0) 위로 솟구치고, 오를 때(n<0) 가라앉는다 + 살랑살랑.
-      const lift = -n * 11;
-      const sway = Math.sin(k.time() * 11) * 1.6;
-      const scalp = [[-5, -19], [-2, -21], [2, -21], [5, -19]];
-      const tip = [[-10, -27], [-3, -32], [3, -32], [10, -27]];
-      for (let i = 0; i < scalp.length; i++) {
-        k.drawLine({
-          p1: k.vec2(scalp[i][0], scalp[i][1]),
-          p2: k.vec2(tip[i][0] + sway, tip[i][1] + lift),
-          width: 2.5,
-          color: ink,
-        });
-      }
+      // 머리카락: 여러 가닥이 곡선으로 휘날린다. 떨어질 때 솟구치고 오를 때 처짐.
+      drawHair(k, vy, ink);
 
       // 좌우 팔다리(왼쪽 s=-1, 오른쪽 s=+1). 관절을 거쳐 두 선으로 그린다.
       for (const s of [-1, 1]) {
@@ -49,6 +38,27 @@ export function drawPlayerComp(k) {
       k.popTransform();
     },
   };
+}
+
+// 머리카락: 두피의 여러 뿌리에서 4마디 곡선이 뻗어나가며 휘날린다.
+// flow>0(하강): 공기저항으로 위로 솟구침 / flow<0(상승): 아래로 처짐.
+function drawHair(k, vy, ink) {
+  const t = k.time();
+  const flow = Math.max(-1.3, Math.min(1.3, vy / 550));
+  const roots = [-6, -3.5, -1, 1, 3.5, 6];
+  const seg = 4;
+  for (const rx of roots) {
+    const dir = rx >= 0 ? 1 : -1;
+    let prev = k.vec2(rx, -19);
+    for (let j = 1; j <= seg; j++) {
+      const up = -19 - j * (4 + flow * 3);           // 위로 뻗음(하강일수록 더)
+      const wave = Math.sin(t * 7 + rx * 0.8 - j * 0.7) * (1.8 * j); // 휘날리는 파동
+      const out = dir * j * 1.2;                       // 끝으로 갈수록 바깥으로
+      const cur = k.vec2(rx + out + wave, up);
+      k.drawLine({ p1: prev, p2: cur, width: Math.max(1.2, 2.4 - j * 0.25), color: ink });
+      prev = cur;
+    }
+  }
 }
 
 // 점프 단계별 포즈 키프레임(왼쪽 기준 오프셋; 오른쪽은 x부호 반전).
@@ -73,17 +83,39 @@ function lerpPose(a, b, t) {
 }
 
 // 발판: 타입별 색만 다르게(지금은 normal만). 나중에 moving/breakable도 여기서 분기.
-export function drawPlatformComp(k, type) {
-  const color = type === "normal" ? k.rgb(95, 185, 95) : k.rgb(150, 150, 150);
+// 발판: 종류(def)에 따라 색·모양이 다르다. 트램펄린엔 스프링, 구름은 몽글몽글.
+export function drawPlatformComp(k, def) {
+  const col = k.rgb(def.color[0], def.color[1], def.color[2]);
   return {
     draw() {
-      k.drawRect({
-        width: TUNING.platformWidth,
-        height: TUNING.platformHeight,
-        anchor: "center",
-        radius: 5,
-        color,
-      });
+      if (def.id === "cloud") {
+        const w = col;
+        k.drawCircle({ pos: k.vec2(-18, 1), radius: 9, color: w });
+        k.drawCircle({ pos: k.vec2(-6, -4), radius: 11, color: w });
+        k.drawCircle({ pos: k.vec2(8, -3), radius: 11, color: w });
+        k.drawCircle({ pos: k.vec2(20, 1), radius: 8, color: w });
+        return;
+      }
+      k.drawRect({ width: TUNING.platformWidth, height: TUNING.platformHeight, anchor: "center", radius: 5, color: col });
+      if (def.id === "spring") {
+        // 트램펄린 스프링(콩 점프 표시)
+        const s = k.rgb(90, 90, 110);
+        k.drawLine({ p1: k.vec2(-8, -7), p2: k.vec2(-8, -14), width: 2, color: s });
+        k.drawLine({ p1: k.vec2(8, -7), p2: k.vec2(8, -14), width: 2, color: s });
+        k.drawLine({ p1: k.vec2(-12, -14), p2: k.vec2(12, -14), width: 3, color: s });
+      }
+    },
+  };
+}
+
+// 코인: 반짝이는 금화(점수 보너스). 천천히 반짝.
+export function drawCoinComp(k) {
+  return {
+    draw() {
+      const shine = 0.6 + Math.abs(Math.sin(k.time() * 3)) * 0.4;
+      k.drawCircle({ pos: k.vec2(0, 0), radius: 9, color: k.rgb(255, 205, 60) });
+      k.drawCircle({ pos: k.vec2(0, 0), radius: 9, fill: false, outline: { width: 2, color: k.rgb(210, 150, 30) } });
+      k.drawCircle({ pos: k.vec2(-3, -3), radius: 2.4, color: k.rgb(255, 255, 255), opacity: shine });
     },
   };
 }

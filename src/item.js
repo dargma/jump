@@ -1,7 +1,8 @@
 // 아이템: 발판 위 스폰 + 졸라맨과 충돌 시 효과 발동.
 // 데이터는 config/items.js, 여기는 "효과 로직"만.
+import { TUNING } from "../config/tuning.js";
 import { ITEMS } from "../config/items.js";
-import { drawItemComp } from "./draw.js";
+import { drawItemComp, drawCoinComp } from "./draw.js";
 
 // 발판 위에 확률적으로 아이템 1개 스폰(한 발판에 최대 1개).
 export function maybeSpawnItem(k, x, platY) {
@@ -19,6 +20,18 @@ function spawnItem(k, x, y, def) {
     drawItemComp(k, def),
     { def, w: 26, h: 26 },
     "item",
+  ]);
+}
+
+// 발판 위에 코인(점수 보너스) 스폰. 아이템과 겹치지 않게 살짝 옆으로.
+export function maybeSpawnCoin(k, x, platY) {
+  if (k.rand() >= TUNING.coinChance) return;
+  const cx = Math.max(16, Math.min(TUNING.width - 16, x + k.rand(-20, 20)));
+  k.add([
+    k.pos(cx, platY - 24),
+    drawCoinComp(k),
+    { w: 20, h: 20 },
+    "coin",
   ]);
 }
 
@@ -60,9 +73,12 @@ function runInstant(k, state, player, def) {
   //   - player.pos 를 그 발판 위로 옮기고 점프시킨다.
 }
 
-// 화면 아래로 내려간 아이템 제거.
-export function cleanupItemsBelow(k, floorY) {
+// 화면 아래로 내려간 수집물(아이템·코인) 제거.
+export function cleanupCollectiblesBelow(k, floorY) {
   k.get("item").forEach((it) => {
     if (it.pos.y > floorY) k.destroy(it);
+  });
+  k.get("coin").forEach((c) => {
+    if (c.pos.y > floorY) k.destroy(c);
   });
 }
